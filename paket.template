@@ -1,0 +1,9 @@
+type file
+id DomoTroller2
+version 0.1.0
+description
+  The awsomest package ever
+authors Andre Cato
+files
+ .\DomoTroller2\bin\Debug\DomoTroller2.dll
+ .\DomoTroller2\bin\Debug\DomoTroller2.pdb
