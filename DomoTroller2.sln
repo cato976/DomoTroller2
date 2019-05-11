@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.EventStore", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.EventStore.Test", "DomoTroller2.EventStore.Test\DomoTroller2.EventStore.Test.csproj", "{1C319911-5E06-4266-B98E-2F4321B84B1E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.ESFramework.Common", "DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj", "{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{1C319911-5E06-4266-B98E-2F4321B84B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C319911-5E06-4266-B98E-2F4321B84B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C319911-5E06-4266-B98E-2F4321B84B1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,12 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EventStore.ClientAPI.NetCore" Version="4.1.0.23" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj" />
   </ItemGroup>
 
 </Project>
