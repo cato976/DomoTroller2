@@ -7,10 +7,10 @@ namespace DomoTroller2.ESEvents.Common.Events.Device
 {
     public class TurnedOn : Event
     {
-        public TurnedOn(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata, int percentage) : base(aggregateGuid, effectiveDateTime, metadata)
+        public TurnedOn(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata, int level) : base(aggregateGuid, effectiveDateTime, metadata)
         {
             AggregateGuid = aggregateGuid;
-            Percentage = percentage;
+            Level = level;
         }
 
         [JsonConstructor]
@@ -19,6 +19,6 @@ namespace DomoTroller2.ESEvents.Common.Events.Device
             Version = version;
         }
 
-        public int Percentage { get; private set; }
+        public int Level { get; private set; }
     }
 }

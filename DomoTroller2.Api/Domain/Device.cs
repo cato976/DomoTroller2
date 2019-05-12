@@ -15,6 +15,7 @@ namespace DomoTroller2.Api.Domain
     {
         private Device(Guid id, IEventMetadata eventMetadata, IEventStore eventStore, int level)
         {
+            ValidateDeviceId(id);
             level = ValidateLevel(level);
             EventStore = eventStore;
             ApplyEvent(new TurnedOn(id, DateTimeOffset.UtcNow, eventMetadata, level));
@@ -29,16 +30,17 @@ namespace DomoTroller2.Api.Domain
 
         public static Device TurnOn(IEventMetadata eventMetadata, IEventStore eventStore, TurnOnCommand cmd)
         {
-            var deviceId = Guid.NewGuid();
-            var turnOnDeviceCommand = new TurnOn(deviceId, cmd.Level);
+            var turnOnDeviceCommand = new TurnOn(cmd.DeviceId, cmd.Level);
             var commandBus = CommandBus.Instance;
             commandBus.Execute(turnOnDeviceCommand);
-            var device = new Device(deviceId, eventMetadata, eventStore, cmd.Level);
+            var device = new Device(cmd.DeviceId, eventMetadata, eventStore, cmd.Level);
             return device;
         }
 
-        public void SetLevel(IEventMetadata eventMetadata, int level, int originalVersion)
+        public void SetLevel(IEventMetadata eventMetadata, Guid id, int level, int originalVersion)
         {
+            ValidateDeviceId(id);
+            ValidateVersion(originalVersion);
             level = ValidateLevel(level);
             ApplyEvent(new SetLevel(AggregateGuid, DateTimeOffset.UtcNow, eventMetadata, level));
             var events = this.GetUncommittedEvents();
@@ -48,7 +50,15 @@ namespace DomoTroller2.Api.Domain
         private void Apply(TurnedOn e)
         {
             AggregateGuid = e.AggregateGuid;
-            Level = e.Percentage;
+            Level = e.Level;
+        }
+
+        private void ValidateDeviceId(Guid deviceId)
+        {
+            if(deviceId == Guid.Empty)
+            {
+                throw new ArgumentException("Invalid device Id specified: cannot be default value.", "device Id");
+            }
         }
 
         private int ValidateLevel(int level)
@@ -63,6 +73,14 @@ namespace DomoTroller2.Api.Domain
             }
 
             return level;
+        }
+
+        protected void ValidateVersion(int version)
+        {
+            if (Version != version)
+            {
+                throw new ArgumentOutOfRangeException("version", "Invalid version specified: the version is out of sync.");
+            }
         }
 
         private bool SendEvent(CompositeAggregateId compositeId, IEnumerable<Event> events)

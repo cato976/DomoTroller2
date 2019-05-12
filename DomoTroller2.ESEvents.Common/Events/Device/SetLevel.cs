@@ -6,13 +6,13 @@ namespace DomoTroller2.ESEvents.Common.Events.Device
 {
     public class SetLevel : Event
     {
-        public SetLevel(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata, int percentage) : base(aggregateGuid, effectiveDateTime, metadata)
+        public SetLevel(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata, int level) : base(aggregateGuid, effectiveDateTime, metadata)
         {
             Id = aggregateGuid;
-            Percentage = percentage;
+            Level = level;
         }
 
         public Guid Id { get; private set; }
-        public int Percentage { get; private set; }
+        public int Level { get; private set; }
     }
 }
