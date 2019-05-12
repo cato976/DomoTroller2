@@ -10,6 +10,7 @@
 *.sln.docstates
 *.sublime-workspace
 *.userprefs
+/.vs
 
 */test-results/
 # Build results
