@@ -15,6 +15,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.ESFramework.Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.ESEvents.Common", "DomoTroller2.ESEvents.Common\DomoTroller2.ESEvents.Common.csproj", "{BCF3E332-FECF-4333-97CD-10C842165EB4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Api", "DomoTroller2.Api\DomoTroller2.Api.csproj", "{F47968DD-10EA-40EF-A341-EB61B41CEB8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Api.Tests", "DomoTroller2.Api.Tests\DomoTroller2.Api.Tests.csproj", "{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.Common", "Device.Common\Device.Common.csproj", "{CC2C2170-ED88-4D39-BE5D-54E550995638}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Common", "DomoTroller2.Common\DomoTroller2.Common.csproj", "{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +53,22 @@ Global
 		{BCF3E332-FECF-4333-97CD-10C842165EB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCF3E332-FECF-4333-97CD-10C842165EB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCF3E332-FECF-4333-97CD-10C842165EB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F47968DD-10EA-40EF-A341-EB61B41CEB8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F47968DD-10EA-40EF-A341-EB61B41CEB8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F47968DD-10EA-40EF-A341-EB61B41CEB8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F47968DD-10EA-40EF-A341-EB61B41CEB8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC2C2170-ED88-4D39-BE5D-54E550995638}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC2C2170-ED88-4D39-BE5D-54E550995638}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC2C2170-ED88-4D39-BE5D-54E550995638}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC2C2170-ED88-4D39-BE5D-54E550995638}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

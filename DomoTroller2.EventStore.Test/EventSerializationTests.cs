@@ -9,9 +9,9 @@ using Newtonsoft.Json.Linq;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using Newtonsoft.Json;
 
-namespace Tests
+namespace DomoTroller2.EventStore.Test
 {
-    public class Tests
+    public class EventSerializationTests
     {
         [SetUp]
         public void Setup()
