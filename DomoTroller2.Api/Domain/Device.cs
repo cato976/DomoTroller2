@@ -28,9 +28,9 @@ namespace DomoTroller2.Api.Domain
         private static readonly ILog Logger = LogManager.GetLogger(typeof(Device));
         private static IEventStore EventStore;
 
-        public static Device TurnOn(IEventMetadata eventMetadata, IEventStore eventStore, TurnOnCommand cmd)
+        public static Device TurnOn(IEventMetadata eventMetadata, IEventStore eventStore, Commands.Device.TurnOnCommand cmd)
         {
-            var turnOnDeviceCommand = new TurnOn(cmd.DeviceId, cmd.Level);
+            var turnOnDeviceCommand = new global::Device.Common.Command.TurnOn(cmd.DeviceId, cmd.Level);
             var commandBus = CommandBus.Instance;
             commandBus.Execute(turnOnDeviceCommand);
             var device = new Device(cmd.DeviceId, eventMetadata, eventStore, cmd.Level);
@@ -42,7 +42,7 @@ namespace DomoTroller2.Api.Domain
             ValidateDeviceId(id);
             ValidateVersion(originalVersion);
             level = ValidateLevel(level);
-            ApplyEvent(new SetLevel(AggregateGuid, DateTimeOffset.UtcNow, eventMetadata, level));
+            ApplyEvent(new ESEvents.Common.Events.Device.SetLevel(AggregateGuid, DateTimeOffset.UtcNow, eventMetadata, level));
             var events = this.GetUncommittedEvents();
             SendEvent(new CompositeAggregateId(eventMetadata.TenantId, AggregateGuid, eventMetadata.Category), events);
         }

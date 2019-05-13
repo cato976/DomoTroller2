@@ -1,6 +1,7 @@
 using System;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
+using Newtonsoft.Json;
 
 namespace DomoTroller2.ESEvents.Common.Events.Device
 {
@@ -8,11 +9,16 @@ namespace DomoTroller2.ESEvents.Common.Events.Device
     {
         public SetLevel(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata, int level) : base(aggregateGuid, effectiveDateTime, metadata)
         {
-            Id = aggregateGuid;
+            AggregateGuid = aggregateGuid;
             Level = level;
         }
 
-        public Guid Id { get; private set; }
+        [JsonConstructor]
+        private SetLevel(Guid aggregateGuid, string effectiveDateTime, string baseContentGuid, string description, EventMetadata metadata, int level, int version) : this(aggregateGuid, DateTimeOffset.Parse(effectiveDateTime), metadata, level)
+        {
+            Version = version;
+        }
+
         public int Level { get; private set; }
     }
 }

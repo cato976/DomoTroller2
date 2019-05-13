@@ -5,7 +5,7 @@ namespace DomoTroller2.Common.CommandBus
 {
     public sealed class CommandBus : ICommandBus
     {
-        private readonly Dictionary<Type, List<Action<ICommand>>> _routes = new Dictionary<Type, List<Action<ICommand>>>();
+        private readonly Dictionary<Type, List<Action<ICommand>>> Routes = new Dictionary<Type, List<Action<ICommand>>>();
 
         private static readonly Lazy<CommandBus> Lazy = new Lazy<CommandBus>(() => new CommandBus());
         public static CommandBus Instance => Lazy.Value;
@@ -17,7 +17,7 @@ namespace DomoTroller2.Common.CommandBus
         {
             List<Action<ICommand>> handlers;
 
-            if (!_routes.TryGetValue(@event.GetType(), out handlers)) return;
+            if (!Routes.TryGetValue(@event.GetType(), out handlers)) return;
 
             foreach (var handler in handlers)
             {
@@ -30,10 +30,10 @@ namespace DomoTroller2.Common.CommandBus
         {
             List<Action<ICommand>> handlers;
 
-            if (!_routes.TryGetValue(typeof(T), out handlers))
+            if (!Routes.TryGetValue(typeof(T), out handlers))
             {
                 handlers = new List<Action<ICommand>>();
-                _routes.Add(typeof(T), handlers);
+                Routes.Add(typeof(T), handlers);
             }
 
             handlers.Add((x => handler((T)x)));
@@ -41,7 +41,7 @@ namespace DomoTroller2.Common.CommandBus
 
         public void RemoveHandlers()
         {
-            throw new NotImplementedException();
+            Routes.Clear();
         }
     }
 }
