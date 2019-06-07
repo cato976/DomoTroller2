@@ -1,6 +1,9 @@
 using DomoTroller2.Common.EventBus;
 using DomoTroller2.ESEvents.Common.Events.Device;
+using DomoTroller2.ESEvents.Common.Events.Unit;
 using DomoTroller2.ESFramework.Common.Interfaces;
+using DomoTroller2.Api.Handlers.Device;
+using DomoTroller2.Api.Handlers.Unit;
 
 namespace DomoTroller2.Api.Handlers
 {
@@ -14,6 +17,8 @@ namespace DomoTroller2.Api.Handlers
             eventBus.RegisterEventHandler<TurnedOn>(deviceHandlers.Handler);
             eventBus.RegisterEventHandler<SetLevel>(deviceHandlers.Handler);
 
+            var unitHandlers = new EventStoreUnitHandlers(eventStore);
+            eventBus.RegisterEventHandler<DoorOpened>(unitHandlers.Handler);
         }
     }
 }

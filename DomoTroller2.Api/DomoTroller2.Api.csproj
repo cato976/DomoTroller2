@@ -15,6 +15,7 @@
     <ProjectReference Include="..\DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj" />
     <ProjectReference Include="..\Device.Common\Device.Common.csproj" />
     <ProjectReference Include="..\DomoTroller2.ESEvents.Common\DomoTroller2.ESEvents.Common.csproj" />
+    <ProjectReference Include="..\Unit.Common\Unit.Common.csproj" />
   </ItemGroup>
 
 </Project>
