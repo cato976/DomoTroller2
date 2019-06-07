@@ -1,7 +1,7 @@
 using DomoTroller2.ESEvents.Common.Events.Device;
 using DomoTroller2.ESFramework.Common.Interfaces;
 
-namespace DomoTroller2.Api.Handlers
+namespace DomoTroller2.Api.Handlers.Device
 {
     public class EventStoreDeviceHandlers
     {

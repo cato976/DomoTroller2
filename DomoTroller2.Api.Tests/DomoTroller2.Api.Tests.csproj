@@ -18,6 +18,7 @@
     <ProjectReference Include="..\DomoTroller2.Api\DomoTroller2.Api.csproj" />
     <ProjectReference Include="..\DomoTroller2.Common\DomoTroller2.Common.csproj" />
     <ProjectReference Include="..\Device.Common\Device.Common.csproj" />
+    <ProjectReference Include="..\Unit.Common\Unit.Common.csproj" />
   </ItemGroup>
 
 </Project>

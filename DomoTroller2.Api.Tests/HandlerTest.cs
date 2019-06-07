@@ -3,6 +3,7 @@ using DomoTroller2.Api.Handlers;
 using DomoTroller2.Common.CommandBus;
 using DomoTroller2.Common.EventBus;
 using DomoTroller2.ESEvents.Common.Events.Device;
+using DomoTroller2.ESEvents.Common.Events.Unit;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using Moq;
@@ -45,6 +46,18 @@ namespace DomoTroller2.Api.Tests
         public void Should_Handle_SetLevel_Device_Command()
         {
             PassCommandToCommandBus(new Device.Common.Command.SetLevel(Guid.NewGuid(), 10));
+        }
+
+        [Test]
+        public void Should_Handle_Unit_Door_Opened_Event()
+        {
+            PassEventToEventBus(new DoorOpened(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata));
+        }
+
+        [Test]
+        public void Should_Handle_Door_OpenTurn_Unit_Command()
+        {
+            PassCommandToCommandBus(new Unit.Common.Command.DoorOpen(Guid.NewGuid()));
         }
 
         private void PassEventToEventBus(IEvent handledEvent)

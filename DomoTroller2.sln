@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.Common", "Device.Com
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Common", "DomoTroller2.Common\DomoTroller2.Common.csproj", "{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit.Common", "Unit.Common\Unit.Common.csproj", "{6C227984-E950-41FD-8758-D3CE77E6582C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C227984-E950-41FD-8758-D3CE77E6582C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C227984-E950-41FD-8758-D3CE77E6582C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C227984-E950-41FD-8758-D3CE77E6582C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C227984-E950-41FD-8758-D3CE77E6582C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

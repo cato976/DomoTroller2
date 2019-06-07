@@ -1,6 +1,6 @@
 using Device.Common.Command;
 
-namespace DomoTroller2.Api.Handlers
+namespace DomoTroller2.Api.Handlers.Device
 {
     public class DeviceCommandHandlers
     {

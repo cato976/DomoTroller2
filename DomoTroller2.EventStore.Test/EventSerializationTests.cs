@@ -8,6 +8,7 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using Newtonsoft.Json;
+using DomoTroller2.ESEvents.Common.Events.Unit;
 
 namespace DomoTroller2.EventStore.Test
 {
@@ -45,7 +46,7 @@ namespace DomoTroller2.EventStore.Test
         }
 
         [Test]
-        public void EventSerialization_SerializeDeviceTurnOnEvent_ShouldDeserialize()
+        public void EventSerialization_SerializeDeviceTurnedOnEvent_ShouldDeserialize()
         {
             var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
             var serializableEvent = new TurnedOn(Guid.NewGuid(), new DateTimeOffset(DateTime.UtcNow), eventMetaData, 100);
@@ -83,6 +84,52 @@ namespace DomoTroller2.EventStore.Test
             var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
             var deserializedEventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
             SetLevel castDeserializedEvent = (SetLevel) deserializedEventData;
+
+            Assert.IsNotNull(deserializedEventData);
+            Assert.AreEqual(serializableEvent.Metadata.AccountGuid, deserializedEventData.Metadata.AccountGuid);
+            Assert.AreEqual(serializableEvent.AggregateGuid, deserializedEventData.AggregateGuid);
+            Assert.AreEqual(serializableEvent.EffectiveDateTime, deserializedEventData.EffectiveDateTime);
+        }
+
+        [Test]
+        public void EventSerialization_SerializeDeviceDoorOpenedEventvent_ShouldDeserialize()
+        {
+            var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var serializableEvent = new DoorOpened(Guid.NewGuid(), new DateTimeOffset(DateTime.UtcNow), eventMetaData);
+
+            var eventData = EventSerialization.SerializeEvent(serializableEvent);
+
+            var eventDataJson = Encoding.UTF8.GetString(eventData.Data);
+            Console.WriteLine(eventDataJson);
+            var parsedJObject = JObject.Parse(eventDataJson);
+            var metaDataJToken = parsedJObject["Metadata"];
+
+            var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
+            var deserializedEventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
+            DoorOpened castDeserializedEvent = (DoorOpened) deserializedEventData;
+
+            Assert.IsNotNull(deserializedEventData);
+            Assert.AreEqual(serializableEvent.Metadata.AccountGuid, deserializedEventData.Metadata.AccountGuid);
+            Assert.AreEqual(serializableEvent.AggregateGuid, deserializedEventData.AggregateGuid);
+            Assert.AreEqual(serializableEvent.EffectiveDateTime, deserializedEventData.EffectiveDateTime);
+        }
+
+        [Test]
+        public void EventSerialization_SerializeDeviceDoorClosedEventvent_ShouldDeserialize()
+        {
+            var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var serializableEvent = new DoorClosed(Guid.NewGuid(), new DateTimeOffset(DateTime.UtcNow), eventMetaData);
+
+            var eventData = EventSerialization.SerializeEvent(serializableEvent);
+
+            var eventDataJson = Encoding.UTF8.GetString(eventData.Data);
+            Console.WriteLine(eventDataJson);
+            var parsedJObject = JObject.Parse(eventDataJson);
+            var metaDataJToken = parsedJObject["Metadata"];
+
+            var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
+            var deserializedEventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
+            DoorClosed castDeserializedEvent = (DoorClosed) deserializedEventData;
 
             Assert.IsNotNull(deserializedEventData);
             Assert.AreEqual(serializableEvent.Metadata.AccountGuid, deserializedEventData.Metadata.AccountGuid);
