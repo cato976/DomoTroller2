@@ -5,3 +5,8 @@ nuget NUnit.Runners
 nuget NUnit
 nuget NUnit3TestAdapter
 nuget Should
+nuget System.IO.Ports
+nuget System.Configuration.ConfigurationManager
+nuget Microsoft.Extensions.Configuration
+nuget Microsoft.Extensions.Configuration.FileExtensions
+nuget Microsoft.Extensions.Configuration.Json
