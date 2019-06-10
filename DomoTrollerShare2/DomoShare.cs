@@ -18,15 +18,25 @@ using System.Collections.Generic;
 using System.Linq;
 using DomoTrollerShare2.Item;
 using NestSharp;
+using Controller.Common.Commands;
+using DomoTroller2.ESFramework.Common.Interfaces;
+using DomoTroller2.ESFramework.Common.Base;
 
 namespace DomoTrollerShare2
 {
     [ComVisible(true)]
     public class DomoShare
     {
-        public bool Connected { get; private set; }
+        //public bool Connected { get; private set; }
+        public delegate void ControllerConnectedHandler(Object sender, ControllerConnectedEventArgs e);
+        public event ControllerConnectedHandler ControllerConnected;
+
         private static clsHAC HAC = null;
+        private static Guid ControllerId = Guid.Empty;
         private static IConfigurationRoot Configuration { get; set; }
+
+        private object unitLock = new object();
+        private object roomLock = new object();
 
         private static bool UserDisconnected = false;
 
@@ -49,6 +59,7 @@ namespace DomoTrollerShare2
             if (HAC == null)
             {
                 Startup();
+                ControllerId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
                 HAC = new clsHAC();
                 try
                 {
@@ -59,7 +70,7 @@ namespace DomoTrollerShare2
                             });
                     t.Start();
 
-                    var emailSettings =Configuration.GetSection("AppSettings").GetSection("EmailSettings");
+                    var emailSettings = Configuration.GetSection("AppSettings").GetSection("EmailSettings");
                     var emailAddresses = emailSettings.GetSection("SendEmailsTo")
                         .GetChildren()
                         .Select(x => x.Value)
@@ -73,6 +84,7 @@ namespace DomoTrollerShare2
                     mm.Subject = "Monitoring";
                     mm.Body = "Monitoring Started";
                     SendMessage();
+                    Initialize();
                 }
                 catch (Exception ex)
                 {
@@ -82,6 +94,16 @@ namespace DomoTrollerShare2
                 Trace.TraceInformation("Home Automation monitor has been started");
             }
         }
+
+        protected virtual void OnControllerConnected(ControllerConnectedEventArgs e)
+        {
+            ControllerConnectedHandler handler = ControllerConnected;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
 
         private void Connect()
         {
@@ -106,7 +128,67 @@ namespace DomoTrollerShare2
                     {
                         while (HAC.Connection.ConnectionState != enuOmniLinkConnectionState.OnlineSecure)
                         {
+                            Thread.Sleep(2000);
                             HAC.Connection.Connect(HandleConnectStatus, HandleUnsolicitedPackets);
+
+                            if (HAC.Connection.ConnectionState == enuOmniLinkConnectionState.OnlineSecure)
+                            {
+                                StartPolling(enuOmniLinkCommStatus.Connecting);
+
+                                Trace.TraceInformation("SENDING AREA REQUEST");
+                                clsOL2MsgRequestExtendedStatus status = null;
+
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.Area;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = HAC.NumAreasUsed;
+
+                                HAC.Connection.Send(status, null, HandleExtendedStatus);
+
+                                Trace.TraceInformation("SENDING THERMOSTAT REQUEST");
+
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.Thermostat;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = HAC.NumThermostats;
+
+                                HAC.Connection.Send(status, HandleRequestExtentedThermostatStatus);
+
+
+                                Trace.TraceInformation("SENDING ZONE REQUEST");
+
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.Zone;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = 1;
+
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.Zone;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = (ushort)HAC.Zones.Count;
+                                HAC.Connection.Send(status, HandleExtendedStatus);
+
+                                Trace.TraceInformation("SENDING UNIT REQUEST");
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.Unit;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = (ushort)HAC.Units.Count;
+                                HAC.Connection.Send(status, HandleExtendedStatus);
+
+                                Trace.TraceInformation("SENDING BUTTON REQUEST");
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.Button;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = (ushort)HAC.Buttons.Count;
+                                HAC.Connection.Send(status, HandleExtendedStatus);
+
+                                Trace.TraceInformation("SENDING USER SETTINGS REQUEST");
+                                status = new clsOL2MsgRequestExtendedStatus(HAC.Connection);
+                                status.ObjectType = enuObjectType.UserSetting;
+                                status.StartingNumber = 1;
+                                status.EndingNumber = (ushort)HAC.UserSettings.Count;
+                                HAC.Connection.Send(status, HandleExtendedStatus);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -114,8 +196,241 @@ namespace DomoTrollerShare2
                         Trace.TraceError($"Exception: {ex}");
                     }
                 }
-
             }
+        }
+
+        private void StartPolling(enuOmniLinkCommStatus connecting)
+        {
+            Trace.TraceInformation("Reading Config.");
+            HAC.CommReadConfig(clsHAC.enuConfigItems.All, DisplayStatus);
+
+
+            while (HAC.CommReadConfigInProgress)
+            {
+                Thread.Sleep(500);
+            }
+
+            int halfZones = HAC.Zones.Count / 2;
+
+            new Thread(() =>
+            {
+                    //ready |= Ready.Thread1;
+                }).Start();
+
+            new Thread(() =>
+            {
+                    //ready |= Ready.Thread2;
+                }).Start();
+
+            timerThermostat1_Elapsed(null, null);
+            timerThermostat1_Elapsed(null, null);
+
+            clsOmniLink2Message msg = new clsOmniLink2Message(HAC.Connection);
+            msg.MessageType = enuOmniLink2MessageType.EnableNotifications;
+            HAC.Connection.Send(new clsOmniLink2Message(HAC.Connection, enuOmniLink2MessageType.EnableNotifications), HandleExtendedStatus);
+        }
+
+        private void DisplayStatus(clsHAC.enuConfigPhase Phase, int ix, ref bool Cancel)
+        {
+            // Display the status
+            if (ix > 0)
+            {
+                Trace.TraceInformation(String.Format("Reading {0} ({1})",
+                    Phase.ToString(),
+                    ix));
+            }
+            else
+            {
+                Trace.TraceInformation("Reading " + Phase.ToString());
+                if (Phase == clsHAC.enuConfigPhase.Done)
+                {
+                    //ready |= Ready.Done;
+                }
+            }
+        }
+
+        private void Initialize()
+        {
+            Task.Run(() =>
+            {
+                GetAreas();
+                GetThermostats();
+                GetZones();
+                GetRooms();
+            });
+        }
+
+        private List<Item.Room> GetRooms()
+        {
+            Status status = new Status();
+            var rr = new Room()
+            {
+                ID = 0,
+                Name = "Unassigned",
+                Number = 0
+            };
+            status.Rooms.Add(rr);
+
+            for (int u = 1; u < HAC.Units.Count; u++)
+            {
+                if (HAC.Units[u].Type == enuOL2UnitType.HLCRoom && HAC.Units[u].Number % 8 == 1)
+                {
+                    rr = new Room()
+                    {
+                        ID = u,
+                        Name = HAC.Units[u].Name,
+                        Number = HAC.Zones[u].Number
+                    };
+                    status.Rooms.Add(rr);
+                }
+
+                //var ro = status.Rooms.Find(room => room.ID == u);
+                if (rr != null && rr.Number == HAC.Units[u].Number)
+                {
+                    SetupUnit(rr, u);
+                }
+                else if (rr != null && rr.Number != HAC.Units[u].Number)
+                {
+                    Unit unit = new Unit();
+                    SetupUnit(unit, u);
+                    rr.Units.Add(unit);
+                }
+            }
+
+            return status.Rooms;
+        }
+
+        private void SetupUnit(Room rr, int u)
+        {
+            lock (roomLock)
+            {
+                rr.Name = HAC.Units[u].Name;
+                rr.ID = u;
+                if ((HAC.Units[u].Status) != 0)
+                {
+                    rr.Status = "ON";
+                }
+                else
+                {
+                    if (rr != null)
+                    {
+                        rr.Status = "OFF";
+                    }
+                }
+                if (HAC.Units[u].Status > 100)
+                {
+                    rr.Level = HAC.Units[u].Status - 100;
+                    rr.Status = String.Format("Light Level {0}%", rr.Level);
+                }
+                else
+                {
+                    if (rr != null)
+                    {
+                        rr.Level = HAC.Units[u].Status;
+                    }
+                }
+                rr.Time = HAC.Units[u].StatusTime;
+            }
+        }
+
+        private void SetupUnit(Unit rr, int u)
+        {
+            lock (roomLock)
+            {
+                rr.Name = HAC.Units[u].Name;
+                rr.ID = u;
+                if ((HAC.Units[u].Status) != 0)
+                {
+                    rr.Status = "ON";
+                }
+                else
+                {
+                    if (rr != null)
+                    {
+                        rr.Status = "OFF";
+                    }
+                }
+                if (HAC.Units[u].Status > 100)
+                {
+                    rr.Level = HAC.Units[u].Status - 100;
+                    rr.Status = String.Format("Light Level {0}%", rr.Level);
+                }
+                else
+                {
+                    if (rr != null)
+                    {
+                        rr.Level = HAC.Units[u].Status;
+                    }
+                }
+                rr.Time = HAC.Units[u].StatusTime;
+            }
+        }
+        private static List<Item.Zone> GetZones()
+        {
+            Status status = new Status();
+
+            for (int z = 1; z < HAC.Zones.Count; z++)
+            {
+                status.Zones.Add(new Zone()
+                {
+                    ID = z,
+                    Name = HAC.Zones[z].Name,
+                    Number = HAC.Zones[z].Number
+                });
+
+                var zn = status.Zones.Find(zone => zone.ID == z);
+                switch ((((HAC.Zones[z].Status) >> 2) & 0x3))
+                {
+                    case 0:
+                        zn.CurrentStatus = "SECURE";
+                        break;
+                    case 1:
+                        zn.CurrentStatus = "TRIPPED";
+                        break;
+                    case 2:
+                        zn.CurrentStatus = "RESET, BUT PREVIOUSLY TRIPPED";
+                        break;
+                    default:
+                        break;
+                }
+
+                switch ((((HAC.Zones[z].Status) >> 4) & 0x3))
+                {
+                    case 0:
+                        zn.ArmingStatus = "DISARMED";
+                        break;
+                    case 1:
+                        zn.ArmingStatus = "ARMED";
+                        break;
+                    case 2:
+                        zn.ArmingStatus = "BYPASSED BY USER";
+                        break;
+                    case 3:
+                        zn.ArmingStatus = "BYPASSED BY SYSTEM";
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return status.Zones;
+        }
+
+        private static List<Item.Area> GetAreas()
+        {
+            Status status = new Status();
+
+            for (int a = 0; a < HAC.Areas.Count; a++)
+            {
+                status.Areas.Add(new Area()
+                {
+                    ID = a,
+                    Name = HAC.Areas[a].Name,
+                    SecurityMode = HAC.Areas[a].AreaMode.ToString()
+                });
+            }
+
+            return status.Areas;
         }
 
         private bool HandleUnsolicitedPackets(byte[] B)
@@ -404,21 +719,10 @@ namespace DomoTrollerShare2
                                         troubleStatus = "UNKNOWN";
                                         break;
                                 }
-                                string name = HAC.Zones[unitNumber].Name; //zoneName[unitNumber];
+                                string name = HAC.Zones[unitNumber].Name;
 
                                 Trace.TraceInformation(String.Format("{0}: Zone change zone {1}, {2}, status {3}, latch alarm status {4}, arming status {5}, trouble status {6}",
                                     DateTime.Now.ToShortTimeString(), unitNumber, name, zoneStatus, latchAlarmStatus, armingStatus, troubleStatus));
-
-                                // create a writer and open the file
-                                //using (TextWriter tw = new StreamWriter("data.txt", true))
-                                //{
-                                //    // write a line of text to the file
-                                //    tw.WriteLine(String.Format("{0}: Zone change zone {1}, {2}, status {3}, latch alarm status {4}, arming status {5}, trouble status {6}",
-                                //    DateTime.Now.ToShortTimeString(), unitNumber, name, zoneStatus, latchAlarmStatus, armingStatus, troubleStatus));
-
-                                //    // close the stream
-                                //    tw.Close();
-                                //}
                             }
                             break;
                         case enuObjectType.Area:
@@ -556,30 +860,8 @@ namespace DomoTrollerShare2
                                         LastSecurityMode = MSG.Mode((byte)i).ToString();
                                         Trace.TraceInformation(String.Format("{0}: Area change area {1}, security mode {2}, Alarm {3}",
                                         DateTime.Now.ToShortTimeString(), unitNumber, MSG.Mode((byte)i).ToString(), totalAlarm));
-
-                                        //using (TextWriter tw = new StreamWriter("data.txt", true))
-                                        //{
-                                        //    // write a line of text to the file
-                                        //    tw.WriteLine(String.Format("{0}: Area change area {1}, security mode {2}, Alarm {3}",
-                                        //    DateTime.Now.ToShortTimeString(), unitNumber, MSG.Mode((byte)i).ToString(), totalAlarm));
-
-                                        //    // close the stream
-                                        //    tw.Close();
-                                        //}
                                     }
                                 }
-                                // create a writer and open the file
-                                //using (TextWriter tw = new StreamWriter("data.txt", true))
-                                //{
-                                //    if (MSG.AreaAlarms((byte)i) >= 1)
-                                //    {
-                                //        // write a line of text to the file
-                                //        tw.WriteLine(String.Format("{0}: Area change area {1}, security mode {2}, Alarm {3}",
-                                //        DateTime.Now.ToShortTimeString(), unitNumber, MSG.Mode((byte)i).ToString(), totalAlarm));
-                                //    }
-                                //    // close the stream
-                                //    tw.Close();
-                                //}
                             }
                             break;
                         case enuObjectType.UserSetting:
@@ -1251,7 +1533,6 @@ namespace DomoTrollerShare2
                 var nesttt = nestThermostats.Result.Values.Where<NestSharp.Thermostat>(n => n.DeviceId == thermo.ID).FirstOrDefault();
 
                 float temp = nesttt.AmbientTemperatureFarenheight > thermo.CoolSetting ? thermo.CoolSetting : thermo.HeatSetting;
-                //Thread.Sleep(10000);
 
                 if (nesttt.HvacMode.ToString() != thermo.Mode.ToString())
                 {
@@ -1491,7 +1772,6 @@ namespace DomoTrollerShare2
 
                 case enuOmniLinkCommStatus.Disconnected:
                     Trace.TraceInformation("CONNECTION STATUS: Disconnected");
-                    Connected = false;
                     if (UserDisconnected == true)
                     {
                         UserDisconnected = false;
@@ -1504,7 +1784,10 @@ namespace DomoTrollerShare2
                     break;
 
                 case enuOmniLinkCommStatus.Connected:
-                    Connected = true;
+                    // Send Connected Event
+                    ControllerConnectedEventArgs args = new ControllerConnectedEventArgs();
+                    OnControllerConnected(args);
+
                     IdentifyController();
                     break;
                 case enuOmniLinkCommStatus.Connecting:
@@ -1557,7 +1840,6 @@ namespace DomoTrollerShare2
                     {
                         HAC.CopySystemInformation(MSG);
                         Trace.TraceInformation("CONTROLLER IS: " + HAC.GetModelText() + " (" + HAC.GetVersionText() + ")");
-                        //SetOnLineStatus(true);
                         return;
                     }
                     Trace.TraceError("Model does not match file");
@@ -1576,7 +1858,6 @@ namespace DomoTrollerShare2
                     {
                         HAC.CopySystemInformation(MSG);
                         Trace.TraceInformation("CONTROLLER IS: " + HAC.GetModelText() + " (" + HAC.GetVersionText() + ")");
-                        //SetOnLineStatus(true);
                         return;
                     }
                     Trace.TraceError("Model does not match file");

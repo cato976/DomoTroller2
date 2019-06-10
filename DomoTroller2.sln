@@ -1,37 +1,41 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 15.0.28307.539
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2", "DomoTroller2\DomoTroller2.csproj", "{42CE1C8A-6232-456C-AE10-5895F26C8187}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2", "DomoTroller2\DomoTroller2.csproj", "{42CE1C8A-6232-456C-AE10-5895F26C8187}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Tests", "DomoTroller2.Tests\DomoTroller2.Tests.csproj", "{AFECB605-DB6C-4BF0-9B5C-B5E39F571F99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.Tests", "DomoTroller2.Tests\DomoTroller2.Tests.csproj", "{AFECB605-DB6C-4BF0-9B5C-B5E39F571F99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.EventStore", "DomoTroller2.EventStore\DomoTroller2.EventStore.csproj", "{C3FBE60E-31AD-46FD-97A7-49E2FD41EFB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.EventStore", "DomoTroller2.EventStore\DomoTroller2.EventStore.csproj", "{C3FBE60E-31AD-46FD-97A7-49E2FD41EFB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.EventStore.Test", "DomoTroller2.EventStore.Test\DomoTroller2.EventStore.Test.csproj", "{1C319911-5E06-4266-B98E-2F4321B84B1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.EventStore.Test", "DomoTroller2.EventStore.Test\DomoTroller2.EventStore.Test.csproj", "{1C319911-5E06-4266-B98E-2F4321B84B1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.ESFramework.Common", "DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj", "{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.ESFramework.Common", "DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj", "{E0C85CB1-1BD8-48DD-8BEE-800286D144D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.ESEvents.Common", "DomoTroller2.ESEvents.Common\DomoTroller2.ESEvents.Common.csproj", "{BCF3E332-FECF-4333-97CD-10C842165EB4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.ESEvents.Common", "DomoTroller2.ESEvents.Common\DomoTroller2.ESEvents.Common.csproj", "{BCF3E332-FECF-4333-97CD-10C842165EB4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Api", "DomoTroller2.Api\DomoTroller2.Api.csproj", "{F47968DD-10EA-40EF-A341-EB61B41CEB8D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.Api", "DomoTroller2.Api\DomoTroller2.Api.csproj", "{F47968DD-10EA-40EF-A341-EB61B41CEB8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Api.Tests", "DomoTroller2.Api.Tests\DomoTroller2.Api.Tests.csproj", "{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.Api.Tests", "DomoTroller2.Api.Tests\DomoTroller2.Api.Tests.csproj", "{6441CCFC-738E-43D5-92E5-F17BEE0E33C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.Common", "Device.Common\Device.Common.csproj", "{CC2C2170-ED88-4D39-BE5D-54E550995638}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Common", "Device.Common\Device.Common.csproj", "{CC2C2170-ED88-4D39-BE5D-54E550995638}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Common", "DomoTroller2.Common\DomoTroller2.Common.csproj", "{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.Common", "DomoTroller2.Common\DomoTroller2.Common.csproj", "{7F4370A2-D6EC-43AF-8D3C-0DA70E860A96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unit.Common", "Unit.Common\Unit.Common.csproj", "{6C227984-E950-41FD-8758-D3CE77E6582C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unit.Common", "Unit.Common\Unit.Common.csproj", "{6C227984-E950-41FD-8758-D3CE77E6582C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTrollerShare2", "DomoTrollerShare2\DomoTrollerShare2.csproj", "{3AA4F365-0D1E-4F65-BA4A-DA5295687E49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTrollerShare2", "DomoTrollerShare2\DomoTrollerShare2.csproj", "{3AA4F365-0D1E-4F65-BA4A-DA5295687E49}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTrollerShare2.Tests", "DomoTrollerShare2.Tests\DomoTrollerShare2.Tests.csproj", "{68BB7913-59C6-4809-B576-3D9FB78DD1BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTrollerShare2.Tests", "DomoTrollerShare2.Tests\DomoTrollerShare2.Tests.csproj", "{68BB7913-59C6-4809-B576-3D9FB78DD1BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Email", "DomoTroller2.Email\DomoTroller2.Email.csproj", "{E66734E1-4A70-43B7-9F4B-186969042B78}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.Email", "DomoTroller2.Email\DomoTroller2.Email.csproj", "{E66734E1-4A70-43B7-9F4B-186969042B78}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Email.Tests", "DomoTroller2.Email.Tests\DomoTroller2.Email.Tests.csproj", "{1CDAB497-55D1-4019-AD48-162DD2D20EA5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DomoTroller2.Email.Tests", "DomoTroller2.Email.Tests\DomoTroller2.Email.Tests.csproj", "{1CDAB497-55D1-4019-AD48-162DD2D20EA5}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controller.Common", "Controller.Common\Controller.Common.csproj", "{C0D07792-FE97-4499-902E-8023902AADE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NestSharp2", "NestSharp2\NestSharp2.csproj", "{EEF6C4DC-3CF6-4CC3-808A-D68E72EFF9E6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -99,8 +103,19 @@ Global
 		{1CDAB497-55D1-4019-AD48-162DD2D20EA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CDAB497-55D1-4019-AD48-162DD2D20EA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CDAB497-55D1-4019-AD48-162DD2D20EA5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C0D07792-FE97-4499-902E-8023902AADE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C0D07792-FE97-4499-902E-8023902AADE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C0D07792-FE97-4499-902E-8023902AADE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C0D07792-FE97-4499-902E-8023902AADE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEF6C4DC-3CF6-4CC3-808A-D68E72EFF9E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEF6C4DC-3CF6-4CC3-808A-D68E72EFF9E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEF6C4DC-3CF6-4CC3-808A-D68E72EFF9E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEF6C4DC-3CF6-4CC3-808A-D68E72EFF9E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3ABBC286-CA08-411F-87B8-34C527BAAFD6}
 	EndGlobalSection
 EndGlobal

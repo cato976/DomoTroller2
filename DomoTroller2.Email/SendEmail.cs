@@ -12,7 +12,7 @@ namespace DomoTroller2.Email
             System.Net.NetworkCredential SMTPUserInfo = new System.Net.NetworkCredential(senderAccount, password);
             smtpclnt.Credentials = SMTPUserInfo;
 
-            smtpclnt.Send(mailMessage);
+            //smtpclnt.Send(mailMessage);
 
             return true;
         }

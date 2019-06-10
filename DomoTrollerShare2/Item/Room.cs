@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace DomoTrollerShare2.Item
 {
-    public class Room
+    public class Room : Unit
     {
         public Room()
         {

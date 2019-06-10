@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DomoTroller2.ESFramework.Common.Base;
+using DomoTroller2.ESFramework.Common.Interfaces;
+using DomoTroller2.EventStore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -26,6 +29,7 @@ namespace DomoTroller2.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            SetupInterfaces(services);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +47,12 @@ namespace DomoTroller2.Api
 
             app.UseHttpsRedirection();
             app.UseMvc();
+        }
+
+        private static void SetupInterfaces(IServiceCollection services)
+        {
+            services.AddScoped<IEventMetadata, EventMetadata>();
+            services.AddScoped<IEventStore, EventStoreImplementation>();
         }
     }
 }

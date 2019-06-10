@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DomoTrollerShare2\DomoTrollerShare2.csproj" />
+    <ProjectReference Include="..\DomoTroller2.Api\DomoTroller2.Api.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Update="appsettings.json">

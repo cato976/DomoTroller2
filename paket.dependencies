@@ -5,6 +5,7 @@ nuget NUnit.Runners
 nuget NUnit
 nuget NUnit3TestAdapter
 nuget Should
+nuget Moq
 nuget System.IO.Ports
 nuget System.Configuration.ConfigurationManager
 nuget Microsoft.Extensions.Configuration

@@ -11,7 +11,7 @@ namespace DomoTrollerShare2
             Thermostats = new List<Thermostat>();
             Zones = new List<Zone>();
             Rooms = new List<Room>();
-            Units = new List<Unit>();
+            Units = new List<Item.Unit>();
         }
 
         public List<Area> Areas { get; set; }
@@ -22,7 +22,7 @@ namespace DomoTrollerShare2
 
         public List<Room> Rooms { get; set; }
 
-        public List<Unit> Units { get; set; }
+        public List<Item.Unit> Units { get; set; }
         
     }
 }

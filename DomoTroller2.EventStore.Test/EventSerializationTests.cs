@@ -3,11 +3,12 @@ using NUnit.Framework;
 
 using DomoTroller2.EventStore;
 using DomoTroller2.ESFramework.Common.Base;
-using DomoTroller2.ESEvents.Common.Events.Device;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using Newtonsoft.Json;
+using DomoTroller2.ESEvents.Common.Events.Device;
+using DomoTroller2.ESEvents.Common.Events.Controller;
 using DomoTroller2.ESEvents.Common.Events.Unit;
 
 namespace DomoTroller2.EventStore.Test
@@ -61,6 +62,29 @@ namespace DomoTroller2.EventStore.Test
             var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
             var deserializedEventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
             TurnedOn castDeserializedEvent = (TurnedOn) deserializedEventData;
+
+            Assert.IsNotNull(deserializedEventData);
+            Assert.AreEqual(serializableEvent.Metadata.AccountGuid, deserializedEventData.Metadata.AccountGuid);
+            Assert.AreEqual(serializableEvent.AggregateGuid, deserializedEventData.AggregateGuid);
+            Assert.AreEqual(serializableEvent.EffectiveDateTime, deserializedEventData.EffectiveDateTime);
+        }
+
+        [Test]
+        public void EventSerialization_SerializeControllerConnectedEvent_ShouldDeserialize()
+        {
+            var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var serializableEvent = new Connected(Guid.NewGuid(), new DateTimeOffset(DateTime.UtcNow), eventMetaData);
+
+            var eventData = EventSerialization.SerializeEvent(serializableEvent);
+
+            var eventDataJson = Encoding.UTF8.GetString(eventData.Data);
+            Console.WriteLine(eventDataJson);
+            var parsedJObject = JObject.Parse(eventDataJson);
+            var metaDataJToken = parsedJObject["Metadata"];
+
+            var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
+            var deserializedEventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
+            Connected castDeserializedEvent = (Connected) deserializedEventData;
 
             Assert.IsNotNull(deserializedEventData);
             Assert.AreEqual(serializableEvent.Metadata.AccountGuid, deserializedEventData.Metadata.AccountGuid);

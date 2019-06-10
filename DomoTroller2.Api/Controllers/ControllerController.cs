@@ -8,7 +8,7 @@ namespace DomoTroller2.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class ControllerController : ControllerBase
     {
         // GET api/values
         [HttpGet]
