@@ -115,3 +115,9 @@ UpgradeLog*.XML
 # NuGet
 packages/
 
+DomoTroller2.Email.Tests/appsettings.json
+DomoTrollerShare2.Tests/appsettings.json
+DomoTrollerShare2.Tests/accesstoken.txt
+DomoTroller2.Api.Tests/appsettings.json
+DomoTroller2.Api/appsettings.json
+DomoTroller2.Api/accesstoken.txt

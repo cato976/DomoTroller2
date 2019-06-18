@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="HAI.Controller">
+      <HintPath>..\externallib\HAI.Controller.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Controller.Common\Controller.Common.csproj" />
+    <ProjectReference Include="..\DomoTroller2.Common\DomoTroller2.Common.csproj" />
+    <ProjectReference Include="..\DomoTroller2.Email\DomoTroller2.Email.csproj" />
+    <ProjectReference Include="..\DomoTroller2.ESEvents.Common\DomoTroller2.ESEvents.Common.csproj" />
+    <ProjectReference Include="..\NestSharp2\NestSharp2.csproj" />
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
+</Project>

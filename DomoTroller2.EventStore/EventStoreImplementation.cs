@@ -31,16 +31,12 @@ namespace DomoTroller2.EventStore
             settings.SetHeartbeatTimeout(TimeSpan.FromSeconds(heartbeatTimeout));
 
             if (useSsl && !String.IsNullOrEmpty(certificateCommonName))
-
             {
-
                 settings.UseSslConnection(certificateCommonName, true);
             }
 
             if (reconnectAttempts > 0)
-
             {
-
                 settings.LimitReconnectionsTo(reconnectAttempts);
                 KeepReconnecting = false;
             }
@@ -83,49 +79,31 @@ namespace DomoTroller2.EventStore
         public void SaveEvents(CompositeAggregateId aggregateId, IEnumerable<IEvent> events)
         {
             foreach (var @event in events)
-
             {
-
                 AppendEventToEventStream(@event, aggregateId);
-
             }
         }
 
         private void AppendEventToEventStream(IEvent @event, CompositeAggregateId aggregateId)
 
         {
-
             var eventData = GetEventData(@event);
 
             try
-
             {
-
                 TimeSpan timeout = KeepReconnecting ? TimeSpan.FromSeconds(30) : TimeSpan.FromMilliseconds(-1);
 
                 _eventStoreConnection.AppendToStreamAsync(aggregateId.CompositeId, @event.Version, eventData).Wait(timeout);
-
             }
-
-            catch(Exception)
-
+            catch (AggregateException)
             {
-
                 throw new ConnectionFailure("Failed to persist event. There may be an issue with the connection to Event Store.");
             }
-
         }
-
-
 
         private static EventData GetEventData(IEvent @event)
-
         {
-
             return @event.SerializeEvent();
         }
-
-
-
     }
 }
