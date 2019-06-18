@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Controller.Common.Commands;
+using Controller.Common.Command;
 using DomoTroller2.Api.Handlers;
 using DomoTroller2.Common.CommandBus;
 using DomoTroller2.Common.EventBus;
@@ -15,6 +15,10 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
+using DomoTroller2.Api.Commands.Controller;
+using DomoTroller2.ESEvents.Common.Events.Controller;
+using DomoTroller2.Api.Commands.Thermostat;
+using Thermostat.Common.Command;
 
 namespace DomoTroller2.Api.Tests
 {
@@ -69,9 +73,27 @@ namespace DomoTroller2.Api.Tests
         }
 
         [Test]
+        public void Should_Handle_Controller_Connect_Event()
+        {
+            PassEventToEventBus(new Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata));
+        }
+
+        [Test]
         public void Should_Handle_Door_OpenTurn_Unit_Command()
         {
             PassCommandToCommandBus(new Unit.Common.Command.DoorOpen(Guid.NewGuid()));
+        }
+
+        [Test]
+        public void Should_Handle_Connect_To_Controller_Command()
+        {
+            PassCommandToCommandBus(new ConnectToController(Guid.NewGuid()));
+        }
+
+        [Test]
+        public void Should_Handle_Thermostat_Connect_Event()
+        {
+            PassEventToEventBus(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata));
         }
 
         [Test]
@@ -81,7 +103,7 @@ namespace DomoTroller2.Api.Tests
             var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
             ConnectToControllerCommand cmd = new ConnectToControllerCommand(Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value));
 
-            var p = new Controller(eventMetadata, moqEventStore.Object).ConnectToController(cmd);
+            var p = new Domain.Controller(eventMetadata, moqEventStore.Object).ConnectToController(cmd);
 
             var events = p.GetUncommittedEvents();
 
@@ -93,17 +115,40 @@ namespace DomoTroller2.Api.Tests
         }
 
         [Test]
+        public void Should_Handle_Connect_To_Thermostat_Command()
+        {
+            PassCommandToCommandBus(new ConnectThermostat(Guid.NewGuid()));
+        }
+
+        [Test]
         public void Connect_To_Controller_Should_Send_One_Event_To_EventStore()
         {
             var moqEventStore = new Mock<IEventStore>();
             var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
             ConnectToControllerCommand cmd = new ConnectToControllerCommand(Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value));
 
-            var p = new Controller(eventMetadata, moqEventStore.Object).ConnectToController(cmd);
+            var p = new Domain.Controller(eventMetadata, moqEventStore.Object).ConnectToController(cmd);
 
             moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Once);
         }
 
+        [Test]
+        public void Should_Connect_To_Thermostat()
+        {
+            var moqEventStore = new Mock<IEventStore>();
+            var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value));
+
+            var p = new Domain.Thermostat(eventMetadata, moqEventStore.Object).ConnectToThermostat(cmd);
+
+            var events = p.GetUncommittedEvents();
+
+            events.ShouldNotBeEmpty();
+            events.Count().ShouldBeGreaterThan(0);
+            events.Count().ShouldBeLessThan(2);
+            Assert.IsNotNull(p.AggregateGuid);
+            Assert.AreNotEqual(Guid.Empty, p.AggregateGuid);
+        }
         private void PassEventToEventBus(IEvent handledEvent)
         {
             EventStoreHandlerRegistration.RegisterEventHandler(moqEventStore.Object);
@@ -116,6 +161,18 @@ namespace DomoTroller2.Api.Tests
             CommandHandlerRegistration.RegisterCommandHandler();
             var commandBus = CommandBus.Instance;
             commandBus.Execute(handlerCommand);
+        }
+
+        [Test]
+        public void Connect_To_Thermostat_Should_Send_One_Event_To_EventStore()
+        {
+            var moqEventStore = new Mock<IEventStore>();
+            var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value));
+
+            var p = new Domain.Thermostat(eventMetadata, moqEventStore.Object).ConnectToThermostat(cmd);
+
+            moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Once);
         }
 
         public static string GetPath()

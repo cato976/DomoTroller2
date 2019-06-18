@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Controller.Common.Commands;
+using Controller.Common.Command;
+using DomoTroller2.Api.Commands.Controller;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using DomoTroller2.EventStore;
 using DomoTrollerShare2;
+using DomoTrollerShare2.EventArguments;
+using DomoTrollerShare2.Interfaces;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +23,7 @@ namespace DomoTroller2.Api
         public static IEventStore EventStore { get; private set; }
         private static DomoShare domoShare;
         private static IConfigurationRoot Configuration { get; set; }
+        private static IHAC HAC { get; }
 
         public static void Main(string[] args)
         {
@@ -46,8 +50,8 @@ namespace DomoTroller2.Api
         {
             var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
             ConnectToControllerCommand cmd = new ConnectToControllerCommand(tenantId);
-            var eventMetadata = new EventMetadata(cmd.Id, "Controller", cmd.Id.ToString(), cmd.Id, cmd.Id, DateTimeOffset.UtcNow);
-            var controller = new Controller(eventMetadata, EventStore).ConnectToController(cmd);
+            var eventMetadata = new EventMetadata(cmd.ControllerId, "Controller", cmd.ControllerId.ToString(), cmd.ControllerId, cmd.ControllerId, DateTimeOffset.UtcNow);
+            var controller = new Domain.Controller(eventMetadata, EventStore).ConnectToController(cmd);
         }
 
         private static void ConnectToEventStore()

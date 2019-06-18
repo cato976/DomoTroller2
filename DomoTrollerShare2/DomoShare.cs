@@ -18,22 +18,30 @@ using System.Collections.Generic;
 using System.Linq;
 using DomoTrollerShare2.Item;
 using NestSharp;
-using Controller.Common.Commands;
+using Controller.Common.Command;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using DomoTroller2.ESFramework.Common.Base;
+using DomoTrollerShare2.Interfaces;
+using DomoTrollerShare2.EventArguments;
 
 namespace DomoTrollerShare2
 {
     [ComVisible(true)]
-    public class DomoShare
+    public class DomoShare : IHAC
     {
-        //public bool Connected { get; private set; }
         public delegate void ControllerConnectedHandler(Object sender, ControllerConnectedEventArgs e);
         public event ControllerConnectedHandler ControllerConnected;
+
+        public delegate void ControllerDisconnectedHandler(Object sender, ControllerDisconnectedEventArgs e);
+        public event ControllerDisconnectedHandler ControllerDisconnected;
+
+        public delegate void ThermostatConnectedHandler(Object sender, ThermostatConnectedEventArgs e);
+        public event ThermostatConnectedHandler ThermostatConnected;
 
         private static clsHAC HAC = null;
         private static Guid ControllerId = Guid.Empty;
         private static IConfigurationRoot Configuration { get; set; }
+        public clsHAC HACPublic { get => HAC; set => throw new NotImplementedException(); }
 
         private object unitLock = new object();
         private object roomLock = new object();
@@ -104,6 +112,23 @@ namespace DomoTrollerShare2
             }
         }
 
+        protected virtual void OnControllerDisconnected(ControllerDisconnectedEventArgs e)
+        {
+            ControllerDisconnectedHandler handler = ControllerDisconnected;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatConnected(ThermostatConnectedEventArgs e)
+        {
+            ThermostatConnectedHandler handler = ThermostatConnected;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
 
         private void Connect()
         {
@@ -1517,7 +1542,7 @@ namespace DomoTrollerShare2
             }
         }
 
-        private static async void UpdateNestThermostat(Item.Thermostat thermo)
+        private async void UpdateNestThermostat(Item.Thermostat thermo)
         {
             string file;
             NestApi nest;
@@ -1634,7 +1659,7 @@ namespace DomoTrollerShare2
             }
         }
 
-        private static List<Item.Thermostat> GetThermostats()
+        private List<Item.Thermostat> GetThermostats()
         {
             Status status = new Status();
 
@@ -1678,13 +1703,15 @@ namespace DomoTrollerShare2
             return status.Thermostats;
         }
 
-        private static async Task<Dictionary<string, NestSharp.Thermostat>> GetNestThermostats(Status status)
+        private async Task<Dictionary<string, NestSharp.Thermostat>> GetNestThermostats(Status status)
         {
             Devices devices = await GetNestDevices();
 
             // Loop through the devices
             foreach (var t in devices.Thermostats)
             {
+                ThermostatConnectedEventArgs thermostatArgs = new ThermostatConnectedEventArgs(t.Key);
+                OnThermostatConnected(thermostatArgs);
 
                 var thermostatId = t.Value.DeviceId;
 
@@ -1772,6 +1799,10 @@ namespace DomoTrollerShare2
 
                 case enuOmniLinkCommStatus.Disconnected:
                     Trace.TraceInformation("CONNECTION STATUS: Disconnected");
+
+                    // Send Disconnected Event
+                    ControllerDisconnectedEventArgs disconnectArgs = new ControllerDisconnectedEventArgs();
+                    OnControllerDisconnected(disconnectArgs);
                     if (UserDisconnected == true)
                     {
                         UserDisconnected = false;

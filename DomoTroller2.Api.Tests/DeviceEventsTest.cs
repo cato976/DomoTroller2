@@ -8,6 +8,7 @@ using Moq;
 using NUnit.Framework;
 using Should;
 using System.Linq;
+using DomoTroller2.Api.Commands.Controller;
 
 namespace DomoTroller2.Api.Tests
 {
