@@ -93,7 +93,8 @@ namespace DomoTroller2.Api.Tests
         [Test]
         public void Should_Handle_Thermostat_Connect_Event()
         {
-            PassEventToEventBus(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata));
+            PassEventToEventBus(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 
+                76, 60, 76, "Cool", "Cooling", 60));
         }
 
         [Test]
@@ -137,7 +138,7 @@ namespace DomoTroller2.Api.Tests
         {
             var moqEventStore = new Mock<IEventStore>();
             var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
-            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value));
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand("theremostatId", Guid.NewGuid(), 76, 60.9, 77.2, "Heat", "Heating", 77.4);
 
             var p = new Domain.Thermostat(eventMetadata, moqEventStore.Object).ConnectToThermostat(cmd);
 
@@ -168,7 +169,7 @@ namespace DomoTroller2.Api.Tests
         {
             var moqEventStore = new Mock<IEventStore>();
             var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
-            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value));
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand("thermostatId", Guid.NewGuid(), 56, 60, 72, "Cool", "Idel");
 
             var p = new Domain.Thermostat(eventMetadata, moqEventStore.Object).ConnectToThermostat(cmd);
 

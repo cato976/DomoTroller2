@@ -16,7 +16,6 @@ using static DomoTrollerShare2.Enumerations.ClimateControl;
 using DomoTrollerShare2.Item;
 using System.Collections.Generic;
 using System.Linq;
-using DomoTrollerShare2.Item;
 using NestSharp;
 using Controller.Common.Command;
 using DomoTroller2.ESFramework.Common.Interfaces;
@@ -48,7 +47,7 @@ namespace DomoTrollerShare2
 
         private static bool UserDisconnected = false;
 
-        private System.Timers.Timer timerThermostat1 = new System.Timers.Timer(60000);
+        private System.Timers.Timer timerThermostat1 = new System.Timers.Timer(90000);
 
         private static string LastSecurityMode;
         private int[] tempValue = new int[25];
@@ -247,8 +246,11 @@ namespace DomoTrollerShare2
                     //ready |= Ready.Thread2;
                 }).Start();
 
-            timerThermostat1_Elapsed(null, null);
-            timerThermostat1_Elapsed(null, null);
+            //timerThermostat1_Elapsed(null, null);
+            //timerThermostat1_Elapsed(null, null);
+            timerThermostat1.Elapsed += timerThermostat1_Elapsed;
+
+            timerThermostat1.Start();
 
             clsOmniLink2Message msg = new clsOmniLink2Message(HAC.Connection);
             msg.MessageType = enuOmniLink2MessageType.EnableNotifications;
@@ -977,7 +979,7 @@ namespace DomoTrollerShare2
             }
         }
 
-        private void timerThermostat1_Elapsed(DomoShare domoShare, object p)
+        private void timerThermostat1_Elapsed(Object domoShare, System.Timers.ElapsedEventArgs p)
         {
             Trace.TraceInformation("Requesting Thermostat 1 status.");
 
@@ -992,7 +994,12 @@ namespace DomoTrollerShare2
             status.StartingNumber = 1;
             status.EndingNumber = (ushort)HAC.UserSettings.Count;
 
-            timerThermostat1.Stop();
+
+            Status stat = new Status();
+            var nests = GetNestThermostats(stat);
+            Task.WaitAll(nests);
+
+            //timerThermostat1.Stop();
         }
 
         private void HandleRequestExtentedThermostatStatus(clsOmniLinkMessageQueueItem M, byte[] B, bool Timeout)
@@ -1710,7 +1717,14 @@ namespace DomoTrollerShare2
             // Loop through the devices
             foreach (var t in devices.Thermostats)
             {
-                ThermostatConnectedEventArgs thermostatArgs = new ThermostatConnectedEventArgs(t.Key);
+                ThermostatConnectedEventArgs thermostatArgs = new ThermostatConnectedEventArgs(t.Key, 
+                    Guid.Parse(Configuration.GetSection("AppSettings").GetSection("Nest_Thermostat_ID").Value), 
+                    t.Value.AmbientTemperatureFarenheight, 
+                    t.Value.TargetTemperatureLowFarenheit,
+                    t.Value.TargetTemperatureHighFarenheit,
+                    Enum.GetName(typeof(HvacMode), t.Value.HvacMode),
+                    Enum.GetName(typeof(HvacState), t.Value.HvacState),
+                    t.Value.Humidity);
                 OnThermostatConnected(thermostatArgs);
 
                 var thermostatId = t.Value.DeviceId;

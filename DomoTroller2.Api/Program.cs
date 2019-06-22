@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Controller.Common.Command;
 using DomoTroller2.Api.Commands.Controller;
+using DomoTroller2.Api.Commands.Thermostat;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using DomoTroller2.EventStore;
@@ -37,6 +38,7 @@ namespace DomoTroller2.Api
             ConnectToEventStore();
             domoShare = new DomoShare();
             domoShare.ControllerConnected += SendEvent;
+            domoShare.ThermostatConnected += SendEvent;
 
             CreateWebHostBuilder(args).Build().Run();
         }
@@ -52,6 +54,15 @@ namespace DomoTroller2.Api
             ConnectToControllerCommand cmd = new ConnectToControllerCommand(tenantId);
             var eventMetadata = new EventMetadata(cmd.ControllerId, "Controller", cmd.ControllerId.ToString(), cmd.ControllerId, cmd.ControllerId, DateTimeOffset.UtcNow);
             var controller = new Domain.Controller(eventMetadata, EventStore).ConnectToController(cmd);
+        }
+
+        static void SendEvent(Object sender, ThermostatConnectedEventArgs e)
+        {
+            var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(e.ThermostatId, e.ThermostatGuid, 
+                e.Temperature, e.HeatSetpoint, e.CoolSetpoint, e.Mode, e.SystemStatus);
+            var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
+            var controller = new Domain.Thermostat(eventMetadata, EventStore).ConnectToThermostat(cmd);
         }
 
         private static void ConnectToEventStore()
