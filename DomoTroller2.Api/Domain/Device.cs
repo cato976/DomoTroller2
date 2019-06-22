@@ -30,7 +30,7 @@ namespace DomoTroller2.Api.Domain
 
         public static Device TurnOn(IEventMetadata eventMetadata, IEventStore eventStore, Commands.Device.TurnOnCommand cmd)
         {
-            var turnOnDeviceCommand = new global::Device.Common.Command.TurnOn(cmd.DeviceId, cmd.Level);
+            var turnOnDeviceCommand = new TurnOn(cmd.DeviceId, cmd.Level);
             var commandBus = CommandBus.Instance;
             commandBus.Execute(turnOnDeviceCommand);
             var device = new Device(cmd.DeviceId, eventMetadata, eventStore, cmd.Level);

@@ -33,73 +33,43 @@ namespace DomoTroller2.EventStore
         }
 
         public static IEvent DeserializeEvent(this RecordedEvent orginalEvent)
-
         {
-
             var eventDataJson = Encoding.UTF8.GetString(orginalEvent.Data);
 
             if (string.IsNullOrWhiteSpace(eventDataJson) || eventDataJson == "{}")
-
             {
-
                 throw new Exception("eventDataJson is empty");
-
             }
-
-
 
             var parsedObject = JObject.Parse(eventDataJson);
-
             var metaDataJToken = parsedObject["Metadata"];
-
             if (metaDataJToken == null)
-
             {
-
                 throw new Exception("metaDataJToken is null");
-
             }
-
-
 
             var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
-
             var eventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
-
             if (eventData == null)
-
             {
-
                 throw new Exception("eventData is null");
-
             }
 
-
-
             eventData.Metadata.EventNumber = orginalEvent.EventNumber;
-
             eventData.Metadata.EventId = orginalEvent.EventId.ToString();
 
-
-
             return eventData;
-
         }
 
         private static object DeserializeObject(string eventDataJson, string typeName)
-
         {
-
             try
-
             {
-
                 var obj = JsonConvert.DeserializeObject(eventDataJson, Type.GetType(typeName));
                 return obj;
             }
             catch (JsonReaderException)
             {
-
                 return null;
             }
         }

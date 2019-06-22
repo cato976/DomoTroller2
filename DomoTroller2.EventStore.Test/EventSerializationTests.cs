@@ -96,7 +96,8 @@ namespace DomoTroller2.EventStore.Test
         public void EventSerialization_SerializeThermostatConnectedEvent_ShouldDeserialize()
         {
             var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
-            var serializableEvent = new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), new DateTimeOffset(DateTime.UtcNow), eventMetaData);
+            var serializableEvent = new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), 
+                new DateTimeOffset(DateTime.UtcNow), eventMetaData, 76, 55, 77, "Cool", "Idel", 45);
 
             var eventData = EventSerialization.SerializeEvent(serializableEvent);
 

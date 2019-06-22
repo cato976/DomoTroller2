@@ -47,7 +47,7 @@ namespace Tests
             {
                 Assert.Pass();
             };
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
         }
 
         [Test]
@@ -59,7 +59,7 @@ namespace Tests
             {
                 Assert.AreEqual("5leT4vtD8y5itr8KCJhj0mO4TyPnaRok", e.ThermostatId);
             };
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
         }
 
         [Test]
