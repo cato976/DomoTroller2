@@ -37,7 +37,7 @@ namespace DomoTroller2.Api.Domain
             return device;
         }
 
-        public void SetLevel(IEventMetadata eventMetadata, Guid id, int level, int originalVersion)
+        public void SetLevel(IEventMetadata eventMetadata, Guid id, int level, long originalVersion)
         {
             ValidateDeviceId(id);
             ValidateVersion(originalVersion);
@@ -75,7 +75,7 @@ namespace DomoTroller2.Api.Domain
             return level;
         }
 
-        protected void ValidateVersion(int version)
+        protected void ValidateVersion(long version)
         {
             if (Version != version)
             {

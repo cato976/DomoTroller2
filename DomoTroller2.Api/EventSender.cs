@@ -27,6 +27,10 @@ namespace DomoTroller2.Api
                 Logger.Error($"Exception: {conn.Message} in {Assembly.GetExecutingAssembly().GetName()}");
                 throw;
             }
+            catch (AggregateException aggrEx)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 Logger.Error($"Exception: {ex.Message} in {Assembly.GetExecutingAssembly().GetName()}");

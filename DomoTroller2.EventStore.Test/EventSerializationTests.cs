@@ -117,6 +117,30 @@ namespace DomoTroller2.EventStore.Test
         }
 
         [Test]
+        public void EventSerialization_SerializeThermostatHeatPointChangedEvent_ShouldDeserialize()
+        {
+            var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var serializableEvent = new ESEvents.Common.Events.Thermostat.CoolSetpointChanged(Guid.NewGuid(), 
+                new DateTimeOffset(DateTime.UtcNow), eventMetaData, 55);
+
+            var eventData = EventSerialization.SerializeEvent(serializableEvent);
+
+            var eventDataJson = Encoding.UTF8.GetString(eventData.Data);
+            Console.WriteLine(eventDataJson);
+            var parsedJObject = JObject.Parse(eventDataJson);
+            var metaDataJToken = parsedJObject["Metadata"];
+
+            var eventMetadata = metaDataJToken.ToObject<EventMetadata>();
+            var deserializedEventData = DeserializeObject(eventDataJson, eventMetadata.CustomMetadata[EventClrTypeHeader]) as IEvent;
+            ESEvents.Common.Events.Thermostat.CoolSetpointChanged castDeserializedEvent = (ESEvents.Common.Events.Thermostat.CoolSetpointChanged) deserializedEventData;
+
+            Assert.IsNotNull(deserializedEventData);
+            Assert.AreEqual(serializableEvent.Metadata.AccountGuid, deserializedEventData.Metadata.AccountGuid);
+            Assert.AreEqual(serializableEvent.AggregateGuid, deserializedEventData.AggregateGuid);
+            Assert.AreEqual(serializableEvent.EffectiveDateTime, deserializedEventData.EffectiveDateTime);
+        }
+
+        [Test]
         public void EventSerialization_SerializeDeviceSetLevelEvent_ShouldDeserialize()
         {
             var eventMetaData = new EventMetadata(Guid.NewGuid(), "testCat", "testCor", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);

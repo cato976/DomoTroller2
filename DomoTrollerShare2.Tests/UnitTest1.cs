@@ -46,8 +46,10 @@ namespace Tests
             domoShare.ControllerConnected += delegate (object sender, ControllerConnectedEventArgs e)
             {
                 Assert.Pass();
+                return;
             };
-            //Thread.Sleep(5000);
+            Thread.Sleep(5000);
+            Assert.Fail("Did not fire Connected event in time.");
         }
 
         [Test]
@@ -58,8 +60,10 @@ namespace Tests
             domoShare.ThermostatConnected += delegate (object sender, ThermostatConnectedEventArgs e)
             {
                 Assert.AreEqual("5leT4vtD8y5itr8KCJhj0mO4TyPnaRok", e.ThermostatId);
+                return;
             };
-            //Thread.Sleep(5000);
+            Thread.Sleep(15000);
+            Assert.Fail("Did not fire Thermostat connected event in time");
         }
 
         [Test]

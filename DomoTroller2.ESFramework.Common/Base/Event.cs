@@ -11,6 +11,7 @@ namespace DomoTroller2.ESFramework.Common.Base
             {
                 throw new ArgumentException(nameof(effectiveDateTime));
             }
+
             AggregateGuid = aggregateGuid;
             EffectiveDateTime = effectiveDateTime;
             Metadata = metadata as EventMetadata ?? throw new ArgumentNullException(nameof(metadata));
@@ -19,6 +20,7 @@ namespace DomoTroller2.ESFramework.Common.Base
         public Guid AggregateGuid { get; set; }
         public EventMetadata Metadata { get; }
         public DateTimeOffset EffectiveDateTime { get; }
-        public int Version { get; set; }
+        public long ExpectedVersion { get; set; }
+        //public long CurrentEventNumber { get; set; }
     }
 }

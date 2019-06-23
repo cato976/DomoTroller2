@@ -24,7 +24,7 @@ namespace DomoTroller2.ESEvents.Common.Events.Thermostat
             EventMetadata metadata, double temperature, double heatSetpoint, double coolSetpoint, string mode, string systemStatus, double? humidity, int version)
             : this(aggregateGuid, DateTimeOffset.Parse(effectiveDateTime), metadata, temperature, heatSetpoint, coolSetpoint, mode, systemStatus, humidity)
         {
-            Version = version;
+            ExpectedVersion = version;
         }
 
         public double Temperature { get; private set; }

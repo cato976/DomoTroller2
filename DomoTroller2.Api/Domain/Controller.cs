@@ -39,7 +39,7 @@ namespace DomoTroller2.Api.Domain
             }
         }
 
-        private readonly IEventMetadata EventMetadata;
+        private new readonly IEventMetadata EventMetadata;
         private readonly IEventStore EventStore;
 
         public Controller ConnectToController(ConnectToControllerCommand cmd)
