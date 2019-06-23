@@ -16,7 +16,7 @@ namespace DomoTroller2.ESEvents.Common.Events.Device
         [JsonConstructor]
         private TurnedOn(Guid aggregateGuid, string effectiveDateTime, string baseContentGuid, string description, EventMetadata metadata, int percentage, int version) : this(aggregateGuid, DateTimeOffset.Parse(effectiveDateTime), metadata, percentage)
         {
-            Version = version;
+            ExpectedVersion = version;
         }
 
         public int Level { get; private set; }

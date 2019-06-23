@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Controller.Common.Command;
 using DomoTroller2.Api.Commands.Controller;
 using DomoTroller2.Api.Commands.Thermostat;
+using DomoTroller2.Api.Handlers.Thermostat;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using DomoTroller2.EventStore;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Thermostat.Common.Command;
 
 namespace DomoTroller2.Api
 {
@@ -39,6 +41,8 @@ namespace DomoTroller2.Api
             domoShare = new DomoShare();
             domoShare.ControllerConnected += SendEvent;
             domoShare.ThermostatConnected += SendEvent;
+            domoShare.ThermostatHeatSetpointChanged += DomoShare_ThermostatHeatSetpointChanged;
+            domoShare.ThermostatCoolSetpointChanged += DomoShare_ThermostatCoolSetpointChanged;
 
             CreateWebHostBuilder(args).Build().Run();
         }
@@ -59,10 +63,32 @@ namespace DomoTroller2.Api
         static void SendEvent(Object sender, ThermostatConnectedEventArgs e)
         {
             var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
-            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(e.ThermostatId, e.ThermostatGuid, 
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(tenantId, e.ThermostatId, e.ThermostatGuid, 
                 e.Temperature, e.HeatSetpoint, e.CoolSetpoint, e.Mode, e.SystemStatus);
             var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
-            var controller = new Domain.Thermostat(eventMetadata, EventStore).ConnectToThermostat(cmd);
+            //var controller = new Domain.Thermostat(eventMetadata, EventStore);
+            var thermostat = Domain.Thermostat.ConnectToThermostat(eventMetadata,
+                EventStore, cmd);
+        }
+
+        private static void DomoShare_ThermostatHeatSetpointChanged(object sender, ThermostatHeatSetpointChangedEventArgs e)
+        {
+            var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
+            HeatSetpointChangeCommand cmd = new HeatSetpointChangeCommand(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewHeatSetpoint);
+            ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(EventStore, e.ThermostatId, e.ThermostatGuid,
+                e.TenantId, (double)e.NewHeatSetpoint);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeHeatSetpointCommand);
+        }
+
+        private static void DomoShare_ThermostatCoolSetpointChanged(object sender, ThermostatCoolSetpointChangedEventArgs e)
+        {
+            var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
+            CoolSetpointChangeCommand cmd = new CoolSetpointChangeCommand(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewCoolSetpoint);
+            ChangeCoolSetpoint changeCoolSetpointCommand = new ChangeCoolSetpoint(EventStore, e.ThermostatId, e.ThermostatGuid,
+                e.TenantId, (double)e.NewCoolSetpoint);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeCoolSetpointCommand);
         }
 
         private static void ConnectToEventStore()

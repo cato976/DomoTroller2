@@ -37,6 +37,12 @@ namespace DomoTrollerShare2
         public delegate void ThermostatConnectedHandler(Object sender, ThermostatConnectedEventArgs e);
         public event ThermostatConnectedHandler ThermostatConnected;
 
+        public delegate void SendEvent(Object sender, ThermostatHeatSetpointChangedEventArgs e);
+        public event SendEvent ThermostatHeatSetpointChanged;
+
+        public delegate void CoolSetpointSendEvent(Object sender, ThermostatCoolSetpointChangedEventArgs e);
+        public event CoolSetpointSendEvent ThermostatCoolSetpointChanged;
+
         private static clsHAC HAC = null;
         private static Guid ControllerId = Guid.Empty;
         private static IConfigurationRoot Configuration { get; set; }
@@ -123,6 +129,24 @@ namespace DomoTrollerShare2
         protected virtual void OnThermostatConnected(ThermostatConnectedEventArgs e)
         {
             ThermostatConnectedHandler handler = ThermostatConnected;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatHeatSetpointChanged(ThermostatHeatSetpointChangedEventArgs e)
+        {
+            SendEvent handler = ThermostatHeatSetpointChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatCoolSetpointChanged(ThermostatCoolSetpointChangedEventArgs e)
+        {
+            CoolSetpointSendEvent handler = ThermostatCoolSetpointChanged;
             if (handler != null)
             {
                 handler(this, e);
@@ -995,11 +1019,20 @@ namespace DomoTrollerShare2
             status.EndingNumber = (ushort)HAC.UserSettings.Count;
 
 
-            Status stat = new Status();
-            var nests = GetNestThermostats(stat);
-            Task.WaitAll(nests);
+            try
+            {
+                Status stat = new Status();
+                var nests = GetNestThermostats(stat);
+                Task.WaitAll(nests);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Error getting Nest Thermostats: {ex}");
+                timerThermostat1.Start();
+                return;
+            }
 
-            //timerThermostat1.Stop();
+            timerThermostat1.Stop();
         }
 
         private void HandleRequestExtentedThermostatStatus(clsOmniLinkMessageQueueItem M, byte[] B, bool Timeout)
@@ -1366,9 +1399,9 @@ namespace DomoTrollerShare2
                 {
                     int messageLength = (MSG.MessageLength - 1) / 2;
 
-                    Status stat = new Status();
-                    var nests = GetNestThermostats(stat);
-                    Task.WaitAll(nests);
+                    //Status stat = new Status();
+                    //var nests = GetNestThermostats(stat);
+                    //Task.WaitAll(nests);
                     int coolSetting, heatSetting;
 
                     for (int m = 0; m < messageLength; m++)
@@ -1408,7 +1441,7 @@ namespace DomoTrollerShare2
                                         {
                                             Item.Thermostat t = new Item.Thermostat()
                                             {
-                                                ID = nests.Result.Values.FirstOrDefault().DeviceId,
+                                                //ID = nests.Result.Values.FirstOrDefault().DeviceId,
                                                 ThermostatType = ThermostatType.Nest,
                                                 CoolSetting = coolSetting,
                                                 HeatSetting = heatSetting,
@@ -1442,7 +1475,7 @@ namespace DomoTrollerShare2
                                         {
                                             Item.Thermostat t = new Item.Thermostat()
                                             {
-                                                ID = nests.Result.Values.FirstOrDefault().DeviceId,
+                                                //ID = nests.Result.Values.FirstOrDefault().DeviceId,
                                                 ThermostatType = ThermostatType.Nest,
                                                 CoolSetting = coolSetting,
                                                 HeatSetting = heatSetting,
@@ -1475,7 +1508,7 @@ namespace DomoTrollerShare2
                                         {
                                             Item.Thermostat t = new Item.Thermostat()
                                             {
-                                                ID = nests.Result.Values.FirstOrDefault().DeviceId,
+                                                //ID = nests.Result.Values.FirstOrDefault().DeviceId,
                                                 ThermostatType = ThermostatType.Nest,
                                                 CoolSetting = coolSetting,
                                                 HeatSetting = heatSetting,
@@ -1508,7 +1541,7 @@ namespace DomoTrollerShare2
                                         {
                                             Item.Thermostat t = new Item.Thermostat()
                                             {
-                                                ID = nests.Result.Values.FirstOrDefault().DeviceId,
+                                                //ID = nests.Result.Values.FirstOrDefault().DeviceId,
                                                 ThermostatType = ThermostatType.Nest,
                                                 CoolSetting = coolSetting,
                                                 HeatSetting = heatSetting,
@@ -1715,7 +1748,15 @@ namespace DomoTrollerShare2
             Devices devices = await GetNestDevices();
 
             // Loop through the devices
-            foreach (var t in devices.Thermostats)
+            if (devices == null)
+            {
+                return null;
+            }
+
+            var thermostatList = new Dictionary<string, Guid>();
+            var thermostatGuid = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("Nest_Thermostat_ID").Value);
+
+            foreach (var t in devices?.Thermostats)
             {
                 ThermostatConnectedEventArgs thermostatArgs = new ThermostatConnectedEventArgs(t.Key, 
                     Guid.Parse(Configuration.GetSection("AppSettings").GetSection("Nest_Thermostat_ID").Value), 
@@ -1728,6 +1769,7 @@ namespace DomoTrollerShare2
                 OnThermostatConnected(thermostatArgs);
 
                 var thermostatId = t.Value.DeviceId;
+                thermostatList.Add(thermostatId, thermostatGuid);
 
                 Trace.TraceInformation(String.Format("{0}: {1} Current Temperature Is {2}°: Outdoor Temperature is {3}°: Current Heatpoint setting is {4}° : Current Coolpoint setting is {5}°",
                 DateTime.Now.ToShortTimeString(),
@@ -1753,12 +1795,13 @@ namespace DomoTrollerShare2
                 });
             }
 
-            SubscribeToNestDeviceDataUpdates();
+
+            SubscribeToNestDeviceDataUpdates(thermostatList);
 
             return devices.Thermostats;
         }
 
-        private static void SubscribeToNestDeviceDataUpdates()
+        private void SubscribeToNestDeviceDataUpdates(Dictionary<string, Guid> thermostatList)
         {
             string file;
             NestApi nest;
@@ -1766,10 +1809,25 @@ namespace DomoTrollerShare2
 
             var t = new Task(() =>
             {
-                nest.SubscribeToNestDeviceDataUpdates();
+                nest.ThermostatHeatSetpointChanged += SendEventForHeatSetpointChanged;
+                nest.ThermostatCoolSetpointChanged += SendEventForCoolSetpointChanged;
+
+                nest.SubscribeToNestDeviceDataUpdates(ControllerId, thermostatList);
             });
 
             t.Start();
+        }
+
+        private void SendEventForHeatSetpointChanged(Object sender, NestSharp2.EventArguments.ThermostatHeatSetpointChangedEventArgs e)
+        {
+            ThermostatHeatSetpointChangedEventArgs heatSetpointChangedArgs = new ThermostatHeatSetpointChangedEventArgs(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewHeatSetpoint);
+            OnThermostatHeatSetpointChanged(heatSetpointChangedArgs);
+        }
+
+        private void SendEventForCoolSetpointChanged(Object sender, NestSharp2.EventArguments.ThermostatCoolSetpointChangedEventArgs e)
+        {
+            ThermostatCoolSetpointChangedEventArgs coolSetpointChangedArgs = new ThermostatCoolSetpointChangedEventArgs(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewCoolSetpoint);
+            OnThermostatCoolSetpointChanged(coolSetpointChangedArgs);
         }
 
         private static async Task<Devices> GetNestDevices()

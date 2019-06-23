@@ -8,6 +8,7 @@ namespace DomoTroller2.ESFramework.Common.Interfaces
         Guid AggregateGuid { get;  }
         EventMetadata Metadata { get; }
         DateTimeOffset EffectiveDateTime { get; }
-        int Version { get; }
+        long ExpectedVersion { get; }
+        //long EventNumber { get; }
     }
 }

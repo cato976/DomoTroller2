@@ -6,6 +6,7 @@ using EventStore.ClientAPI.SystemData;
 using DomoTroller2.EventStore.Exceptions;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using DomoTroller2.ESFramework.Common.Base;
+using System.Linq;
 
 namespace DomoTroller2.EventStore
 {
@@ -53,7 +54,29 @@ namespace DomoTroller2.EventStore
 
         public List<IEvent> GetAllEvents(CompositeAggregateId aggregateId)
         {
-            throw new NotImplementedException();
+            var eventList = new List<IEvent>();
+            long sliceStart = 0;
+            StreamEventsSlice currentEventSlice;
+            do
+            {
+                currentEventSlice = _eventStoreConnection.ReadStreamEventsForwardAsync(aggregateId.CompositeId, sliceStart, 500, false).Result;
+
+                if (currentEventSlice.Status == SliceReadStatus.StreamNotFound)
+                {
+                    throw new StreamNotFoundException(aggregateId.CompositeId);
+                }
+
+                if (currentEventSlice.Status == SliceReadStatus.StreamDeleted)
+                {
+                    throw new StreamDeletedException(aggregateId.CompositeId);
+                }
+
+                sliceStart = currentEventSlice.NextEventNumber;
+
+                eventList.AddRange(currentEventSlice.Events.Select(data => data.Event.DeserializeEvent()).Where(@event => @event != null));
+            } while (!currentEventSlice.IsEndOfStream);
+
+            return eventList;
         }
 
         public List<IEvent> GetAllEventsToEventIdInclusive(CompositeAggregateId aggregateId, string eventId)
@@ -93,11 +116,11 @@ namespace DomoTroller2.EventStore
             {
                 TimeSpan timeout = KeepReconnecting ? TimeSpan.FromSeconds(30) : TimeSpan.FromMilliseconds(-1);
 
-                _eventStoreConnection.AppendToStreamAsync(aggregateId.CompositeId, @event.Version, eventData).Wait(timeout);
+                _eventStoreConnection.AppendToStreamAsync(aggregateId.CompositeId, @event.ExpectedVersion, eventData).Wait(timeout);
             }
-            catch (AggregateException)
+            catch (AggregateException ex)
             {
-                throw new ConnectionFailure("Failed to persist event. There may be an issue with the connection to Event Store.");
+                throw;
             }
         }
 

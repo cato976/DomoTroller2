@@ -16,7 +16,7 @@ namespace DomoTroller2.ESEvents.Common.Events.Device
         [JsonConstructor]
         private SetLevel(Guid aggregateGuid, string effectiveDateTime, string baseContentGuid, string description, EventMetadata metadata, int level, int version) : this(aggregateGuid, DateTimeOffset.Parse(effectiveDateTime), metadata, level)
         {
-            Version = version;
+            ExpectedVersion = version;
         }
 
         public int Level { get; private set; }

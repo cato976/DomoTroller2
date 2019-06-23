@@ -19,6 +19,7 @@ using DomoTroller2.Api.Commands.Controller;
 using DomoTroller2.ESEvents.Common.Events.Controller;
 using DomoTroller2.Api.Commands.Thermostat;
 using Thermostat.Common.Command;
+using DomoTroller2.Api.Handlers.Thermostat;
 
 namespace DomoTroller2.Api.Tests
 {
@@ -138,18 +139,63 @@ namespace DomoTroller2.Api.Tests
         {
             var moqEventStore = new Mock<IEventStore>();
             var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
-            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand("theremostatId", Guid.NewGuid(), 76, 60.9, 77.2, "Heat", "Heating", 77.4);
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), "theremostatId", Guid.NewGuid(), 76, 60.9, 77.2, "Heat", "Heating", 77.4);
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
 
-            var p = new Domain.Thermostat(eventMetadata, moqEventStore.Object).ConnectToThermostat(cmd);
+            var p = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
 
             var events = p.GetUncommittedEvents();
 
-            events.ShouldNotBeEmpty();
-            events.Count().ShouldBeGreaterThan(0);
-            events.Count().ShouldBeLessThan(2);
             Assert.IsNotNull(p.AggregateGuid);
             Assert.AreNotEqual(Guid.Empty, p.AggregateGuid);
         }
+
+        [Test]
+        public void Should_Change_Heat_Setpoint_To_Thermostat()
+        {
+            var moqEventStore = new Mock<IEventStore>();
+            var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var thermostatId = "termostatId";
+            var thermostatGuid = Guid.NewGuid();
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), thermostatId, thermostatGuid, 76, 60.9, 77.2, "Heat", "Heating", 77.4);
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
+
+            var p = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
+            HeatSetpointChangeCommand heatSetpointChangeCommand = new HeatSetpointChangeCommand(Guid.NewGuid(), thermostatId, thermostatGuid, 61);
+            ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(moqEventStore.Object, thermostatId, thermostatGuid, Guid.NewGuid(), (double)cmd.HeatSetpoint);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeHeatSetpointCommand);
+
+            Assert.IsNotNull(p.AggregateGuid);
+            Assert.AreNotEqual(Guid.Empty, p.AggregateGuid);
+        }
+
+        [Test]
+        public void Should_Change_Cool_Setpoint_To_Thermostat()
+        {
+            var moqEventStore = new Mock<IEventStore>();
+            var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var thermostatId = "termostatId";
+            var thermostatGuid = Guid.NewGuid();
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), thermostatId, thermostatGuid, 76, 60.9, 77.2, "Heat", "Heating", 77.4);
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
+
+            var p = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
+            CoolSetpointChangeCommand coolSetpointChangeCommand = new CoolSetpointChangeCommand(Guid.NewGuid(), thermostatId, thermostatGuid, 61);
+            ChangeCoolSetpoint changeHeatSetpointCommand = new ChangeCoolSetpoint(moqEventStore.Object, thermostatId, thermostatGuid, Guid.NewGuid(), (double)cmd.HeatSetpoint);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeHeatSetpointCommand);
+
+            Assert.IsNotNull(p.AggregateGuid);
+            Assert.AreNotEqual(Guid.Empty, p.AggregateGuid);
+        }
+
         private void PassEventToEventBus(IEvent handledEvent)
         {
             EventStoreHandlerRegistration.RegisterEventHandler(moqEventStore.Object);
@@ -169,9 +215,9 @@ namespace DomoTroller2.Api.Tests
         {
             var moqEventStore = new Mock<IEventStore>();
             var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
-            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand("thermostatId", Guid.NewGuid(), 56, 60, 72, "Cool", "Idel");
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), "thermostatId", Guid.NewGuid(), 56, 60, 72, "Cool", "Idel");
 
-            var p = new Domain.Thermostat(eventMetadata, moqEventStore.Object).ConnectToThermostat(cmd);
+            var p = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
 
             moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Once);
         }

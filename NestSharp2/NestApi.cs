@@ -9,11 +9,18 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
+using NestSharp2.EventArguments;
 
 namespace NestSharp
 {
     public class NestApi
     {
+        public delegate void ThermostatHeatSetpointChangedHandler(Object sender, ThermostatHeatSetpointChangedEventArgs e);
+        public event ThermostatHeatSetpointChangedHandler ThermostatHeatSetpointChanged;
+        
+        public delegate void ThermostatCoolSetpointChangedHandler(Object sender, ThermostatCoolSetpointChangedEventArgs e);
+        public event ThermostatCoolSetpointChangedHandler ThermostatCoolSetpointChanged;
+
         public NestApi (string clientId, string clientSecret)
         {
             ClientId = clientId;
@@ -118,7 +125,7 @@ namespace NestSharp
             return JsonConvert.DeserializeObject<Devices> (data);
         }
 
-        public void SubscribeToNestDeviceDataUpdates()
+        public void SubscribeToNestDeviceDataUpdates(Guid tenantId, Dictionary<string, Guid> thermostats)
         {
             var accessToken = string.Empty;
             string file;
@@ -130,15 +137,48 @@ namespace NestSharp
             }
 
             var firebaseClient = new Firebase("https://developer-api.nest.com/", accessToken);
-            var response = firebaseClient.GetStreaming("devices",
-                    changed: (s, e) => {
-                        if (e.Path.Contains("ambient_temperature_f"))
-                            //Console.WriteLine("Current temperature has been updated to: {0}.", e.Data);
-                            Trace.TraceInformation("Current temperature of Nest Thermostat has been updated to: {0}.", e.Data);
-                    });
+            try
+            {
+                var response = firebaseClient.GetStreaming("devices",
+                        changed: (s, e) =>
+                        {
+                            if (e.Path.Contains("ambient_temperature_f"))
+                            {
+                                Trace.TraceInformation("Current temperature of Nest Thermostat has been updated to: {0}.", e.Data);
+                            }
+                            else if (e.Path.Contains("target_temperature_low_f"))
+                            {
+                                Trace.TraceInformation("Heat Setpoint of Nest Thermostat has been updated to: {0}.", e.Data);
+                                double newValue;
+                                double.TryParse(e.Data, out newValue);
+                                var thermostatId = e.Path.Replace($"/devices/thermostats/", string.Empty).Replace($"/target_temperature_low_f", string.Empty);
+                                Guid thermostatGuid;
+                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                ThermostatHeatSetpointChangedEventArgs heatSetpointChangedArgs =
+                                new ThermostatHeatSetpointChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                OnThermostatHeatSetpointChanged(heatSetpointChangedArgs);
+                            }
+                            else if (e.Path.Contains("target_temperature_high_f"))
+                            {
+                                Trace.TraceInformation("Cool Setpoint of Nest Thermostat has been updated to: {0}.", e.Data);
+                                double newValue;
+                                double.TryParse(e.Data, out newValue);
+                                var thermostatId = e.Path.Replace($"/devices/thermostats/", string.Empty).Replace($"/target_temperature_high_f", string.Empty);
+                                Guid thermostatGuid;
+                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                ThermostatCoolSetpointChangedEventArgs coolSetpointChangedArgs =
+                                new ThermostatCoolSetpointChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                OnThermostatCoolSetpointChanged(coolSetpointChangedArgs);
+                            }
+                        });
 
-            //Console.WriteLine("Change the current temperature of the Nest Thermostat in the Nest Developer Chrome Extension to see the real-time updates.");
-            Trace.TraceInformation("Change the current temperature of the Nest Thermostat in the Nest Developer Chrome Extension to see the real-time updates.");
+                //Console.WriteLine("Change the current temperature of the Nest Thermostat in the Nest Developer Chrome Extension to see the real-time updates.");
+                Trace.TraceInformation("Change the current temperature of the Nest Thermostat in the Nest Developer Chrome Extension to see the real-time updates.");
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Error connectiong to REST Streaming: {ex}");
+            }
         }
 
         public async Task<Dictionary<string, Structure>> GetStructuresAsync ()
@@ -273,6 +313,24 @@ namespace NestSharp
 
             return JObject.Parse (data);
         }            
+
+        protected virtual void OnThermostatHeatSetpointChanged(ThermostatHeatSetpointChangedEventArgs e)
+        {
+            ThermostatHeatSetpointChangedHandler handler = ThermostatHeatSetpointChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatCoolSetpointChanged(ThermostatCoolSetpointChangedEventArgs e)
+        {
+            ThermostatCoolSetpointChangedHandler handler = ThermostatCoolSetpointChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
     }
 }
 

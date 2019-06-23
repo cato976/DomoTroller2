@@ -21,6 +21,7 @@ namespace DomoTroller2.Api.Handlers
             commandBus.RegisterHandler<TurnOn>(deviceHandlers.Handle);
             commandBus.RegisterHandler<ConnectToController>(controllerHandlers.Handle);
             commandBus.RegisterHandler<ConnectThermostat>(thermostatHandlers.Handle);
+            commandBus.RegisterHandler<ChangeHeatSetpoint>(thermostatHandlers.Handle);
         }
     }
 }
