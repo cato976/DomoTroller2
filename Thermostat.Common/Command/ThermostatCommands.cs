@@ -49,4 +49,23 @@ namespace Thermostat.Common.Command
         public double? NewCoolSetpoint { get; private set; }
         public  IEventStore EventStore { get; private set; }
     }
+
+    public class ChangeAmbientTemperature : ICommand
+    {
+        public ChangeAmbientTemperature(IEventStore eventStore, string thermostatId, Guid id, Guid tenantId, double? newAmbientTemperature)
+        {
+            ThermostatId = thermostatId;
+            Id = id;
+            TenantId = tenantId;
+            NewAmbientTemperature = newAmbientTemperature;
+            EventStore = eventStore;
+        }
+
+        public string ThermostatId { get; private set; }
+        public Guid Id { get; private set; }
+        public Guid TenantId { get; private set; }
+        public double? NewAmbientTemperature { get; private set; }
+        public  IEventStore EventStore { get; private set; }
+        
+    }
 }

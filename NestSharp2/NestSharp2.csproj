@@ -61,6 +61,7 @@
   <ItemGroup>
     <Compile Include="Devices.cs" />
     <Compile Include="Enums.cs" />
+    <Compile Include="EventArguments\ThermostatAmbientTemperatureChangedEventArgs.cs" />
     <Compile Include="EventArguments\ThermostatCoolSetpointChangedEventArgs.cs" />
     <Compile Include="EventArguments\ThermostatHeatSetpointChangedEventArgs.cs" />
     <Compile Include="MetaData.cs" />

@@ -5,6 +5,7 @@ using DomoTroller2.Thermostat.Api.Commands;
 using DomoTroller2.Thermostat.Api.Handlers;
 using Moq;
 using NUnit.Framework;
+using Should;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -118,7 +119,7 @@ namespace DomoTroller2.Thermostat.Api.Tests
             ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 40, 50, 80, "Cool", "Idel");
             HeatSetpointChangeCommand heatSetpointCmd = new HeatSetpointChangeCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 67);
             List<IEvent> connected = new List<IEvent>();
-            connected.Add(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            connected.Add(new Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
             moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
 
             var thermo = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
@@ -126,6 +127,26 @@ namespace DomoTroller2.Thermostat.Api.Tests
             ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(moqEventStore.Object, cmd.ThermostatId, 
                 cmd.ThermostatAggregateId, Guid.NewGuid(), heatSetpointCmd.NewHeatSetpoint);
             moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
+            var events = thermo.GetUncommittedEvents();
+            events.Count().ShouldEqual(1);
+        }
+
+        [Test]
+        public void Ambient_Temperature_Changed_Should_Update_Ambient_Tempurature()
+        {
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 40, 50, 80, "Cool", "Idel");
+            AmbientTemperatureChangeCommand ambientTemperatureChangeCmd = new AmbientTemperatureChangeCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 67);
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
+
+            var thermo = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
+            thermo.ChangeAmbientTemperature(eventMetadata, moqEventStore.Object, ambientTemperatureChangeCmd, thermo.Version);
+            ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(moqEventStore.Object, cmd.ThermostatId, 
+                cmd.ThermostatAggregateId, Guid.NewGuid(), ambientTemperatureChangeCmd.NewAmbientTemperature);
+            moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
+            var events = thermo.GetUncommittedEvents();
+            events.Count().ShouldEqual(1);
         }
     }
 }
