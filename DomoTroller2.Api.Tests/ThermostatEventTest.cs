@@ -125,7 +125,6 @@ namespace DomoTroller2.Api.Tests
             thermo.ChangeHeatSetpoint(eventMetadata, moqEventStore.Object, heatSetpointCmd, thermo.Version);
             ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(moqEventStore.Object, cmd.ThermostatId, 
                 cmd.ThermostatAggregateId, Guid.NewGuid(), heatSetpointCmd.NewHeatSetpoint);
-            var handler = new ThermostatCommandHandlers();
             moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
         }
     }
