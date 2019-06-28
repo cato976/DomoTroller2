@@ -23,7 +23,7 @@ namespace DomoTroller2.Thermostat.Api.Handlers
         public void Handle(ChangeHeatSetpoint message)
         {
             //Validate
-            ValidateHeatSetpoint(message.NewHeatSetpoint);
+            ValidateSetpoint(message.NewHeatSetpoint);
 
             //Process
             var tenantId = message.TenantId;
@@ -42,12 +42,11 @@ namespace DomoTroller2.Thermostat.Api.Handlers
         public void Handle(ChangeCoolSetpoint message)
         {
             //Validate
-            ValidateHeatSetpoint(message.NewCoolSetpoint);
+            ValidateSetpoint(message.NewCoolSetpoint);
 
             //Process
             var tenantId = message.TenantId;
             var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
-            var thermostat = new Domain.Thermostat(message.Id);
 
             Repository<Domain.Thermostat> thermostatRepo = new Repository<Domain.Thermostat>(message.EventStore);
 
@@ -58,11 +57,37 @@ namespace DomoTroller2.Thermostat.Api.Handlers
             found.ChangeCoolSetpoint(eventMetadata, message.EventStore, cmd, ((Aggregate)found).EventMetadata.EventNumber);
         }
 
-        private static void ValidateHeatSetpoint(double? heatSetpoint)
+        public void Handle(ChangeAmbientTemperature message)
         {
-            if (heatSetpoint == null)
+            //Validate
+            ValidateAmbientTemperature(message.NewAmbientTemperature);
+
+            //Process
+            var tenantId = message.TenantId;
+            var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
+
+            Repository<Domain.Thermostat> thermostatRepo = new Repository<Domain.Thermostat>(message.EventStore);
+
+            AmbientTemperatureChangeCommand cmd = new AmbientTemperatureChangeCommand(tenantId, message.ThermostatId, message.Id, message.NewAmbientTemperature);
+
+            var found = thermostatRepo.GetById(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));
+
+            found.ChangeAmbientTemperature(eventMetadata, message.EventStore, cmd, ((Aggregate)found).EventMetadata.EventNumber);
+        }
+
+        private static void ValidateSetpoint(double? setpoint)
+        {
+            if (setpoint == null)
             {
-                throw new ArgumentNullException("Invalid Heat Setpoint specified: cannot be null.");
+                throw new ArgumentNullException("Invalid Setpoint specified: cannot be null.");
+            }
+        }
+
+        private static void ValidateAmbientTemperature(double? ambientTemperature)
+        {
+            if (ambientTemperature == null)
+            {
+                throw new ArgumentNullException("Invalid ambient temperature specified: cannot be null.");
             }
         }
 

@@ -41,6 +41,7 @@ namespace DomoTroller2.Thermostat.Api
             domoShare.ThermostatConnected += SendEvent;
             domoShare.ThermostatHeatSetpointChanged += DomoShare_ThermostatHeatSetpointChanged;
             domoShare.ThermostatCoolSetpointChanged += DomoShare_ThermostatCoolSetpointChanged;
+            domoShare.ThermostatAmbientTemperatureChanged += DomoShare_ThermostatAmbientTemperatureChanged;
 
             CreateWebHostBuilder(args).Build().Run();
         }
@@ -78,6 +79,17 @@ namespace DomoTroller2.Thermostat.Api
                 e.TenantId, (double)e.NewCoolSetpoint);
             var handler = new ThermostatCommandHandlers();
             handler.Handle(changeCoolSetpointCommand);
+        }
+
+        private static void DomoShare_ThermostatAmbientTemperatureChanged(object sender, ThermostatAmbientTemperatureChangedEventArgs e)
+        {
+            var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
+            AmbientTemperatureChangeCommand cmd = new AmbientTemperatureChangeCommand(e.TenantId, e.ThermostatId, 
+                e.ThermostatGuid, e.NewAmbientTemperature);
+            ChangeAmbientTemperature changeAmbientTemperatureCommand = new ChangeAmbientTemperature(EventStore, e.ThermostatId, e.ThermostatGuid,
+                e.TenantId, (double)e.NewAmbientTemperature);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeAmbientTemperatureCommand);
         }
 
         private static void ConnectToEventStore()

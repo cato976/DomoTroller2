@@ -16,7 +16,9 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public Thermostat()
         {
             Register<Connected>(OnConnected);
-            Register<CoolSetpointChanged>(OnHeatSetpointChanged);
+            Register<CoolSetpointChanged>(OnCoolSetpointChanged);
+            Register<HeatSetpointChanged>(OnHeatSetpointChanged);
+            Register<AmbientTemperatureChanged>(OnAmbientTemperatureChanged);
         }
 
         public Thermostat(Guid thermostatGuid)
@@ -51,6 +53,8 @@ namespace DomoTroller2.Thermostat.Api.Domain
         }
 
         public double HeatSetpoint { get; private set; }
+        public double CoolSetpoint { get; private set; }
+        public double AmbientTemperature { get; private set; }
 
         private new readonly IEventMetadata EventMetadata;
         private readonly IEventStore EventStore;
@@ -58,7 +62,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public static Thermostat ConnectToThermostat(IEventMetadata eventMetadata, IEventStore eventStore, ConnectToThermostatCommand cmd)
         {
             ValidateTemputure(cmd.Temperature);
-            ValidateHeatSetpoint(cmd.HeatSetpoint);
+            ValidateSetpoint(cmd.HeatSetpoint);
             ValidateCoolSetpoint(cmd.CoolSetpoint);
             ValidateMode(cmd.Mode);
             ValidateSystemStatus(cmd.SystemStatus);
@@ -81,7 +85,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public void ChangeHeatSetpoint(IEventMetadata eventMetadata, IEventStore eventStore,
             HeatSetpointChangeCommand cmd, long orginalEventNumber)
         {
-            ValidateHeatSetpoint(cmd.NewHeatSetpoint);
+            ValidateSetpoint(cmd.NewHeatSetpoint);
             ValidateEventNumber(orginalEventNumber);
             ValidateCategory(eventMetadata.Category);
 
@@ -107,16 +111,43 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public void ChangeCoolSetpoint(IEventMetadata eventMetadata, IEventStore eventStore,
             CoolSetpointChangeCommand cmd, long orginalEventNumber)
         {
-            ValidateHeatSetpoint(cmd.NewCoolSetpoint);
+            ValidateSetpoint(cmd.NewCoolSetpoint);
             ValidateEventNumber(orginalEventNumber);
             ValidateCategory(eventMetadata.Category);
 
-            var connectToControllerCommand = new ChangeCoolSetpoint(eventStore, cmd.ThermostatId, 
+            var coolSetpointChangeCommand = new ChangeCoolSetpoint(eventStore, cmd.ThermostatId, 
                 cmd.ThermostatGuid, cmd.TenantId, (double)cmd.NewCoolSetpoint);
             var commandBus = CommandBus.Instance;
-            commandBus.Execute(connectToControllerCommand);
+            commandBus.Execute(coolSetpointChangeCommand);
 
             ApplyEvent(new CoolSetpointChanged(cmd.ThermostatGuid, DateTimeOffset.UtcNow, eventMetadata, (double)cmd.NewCoolSetpoint), -4);
+
+            // Send Event to Event Store
+            var events = this.GetUncommittedEvents();
+            try
+            {
+                EventSender.SendEvent(eventStore, new CompositeAggregateId(eventMetadata.TenantId, AggregateGuid, eventMetadata.Category), events);
+            }
+            catch (ConnectionFailure conn)
+            {
+                Trace.TraceError($"There was a connection error: {conn}");
+            }
+        }
+
+        public void ChangeAmbientTemperature(IEventMetadata eventMetadata, IEventStore eventStore,
+            AmbientTemperatureChangeCommand cmd, long orginalEventNumber)
+        {
+            ValidateAmbientTemperature(cmd.NewAmbientTemperature);
+            ValidateEventNumber(orginalEventNumber);
+            ValidateCategory(eventMetadata.Category);
+
+            var changeAmbientTemperatureCommand = new ChangeAmbientTemperature(eventStore, cmd.ThermostatId,
+                cmd.ThermostatGuid, cmd.TenantId, (double)cmd.NewAmbientTemperature);
+            var commandBus = CommandBus.Instance;
+            commandBus.Execute(changeAmbientTemperatureCommand);
+
+            ApplyEvent(new AmbientTemperatureChanged(cmd.ThermostatGuid, DateTimeOffset.UtcNow, eventMetadata,
+                (double)cmd.NewAmbientTemperature), -4);
 
             // Send Event to Event Store
             var events = this.GetUncommittedEvents();
@@ -150,11 +181,11 @@ namespace DomoTroller2.Thermostat.Api.Domain
             }
         }
 
-        private static void ValidateHeatSetpoint(double? heatSetpoint)
+        private static void ValidateSetpoint(double? heatSetpoint)
         {
             if (heatSetpoint == null)
             {
-                throw new ArgumentNullException("Invalid Heat Setpoint specified: cannot be null.");
+                throw new ArgumentNullException("Invalid Setpoint specified: cannot be null.");
             }
         }
 
@@ -198,6 +229,14 @@ namespace DomoTroller2.Thermostat.Api.Domain
             }
         }
 
+        private static void ValidateAmbientTemperature(double? ambientTemperature)
+        {
+            if (ambientTemperature == null)
+            {
+                throw new ArgumentNullException("Invalid ambient temperature specified: cannot be null.");
+            }
+        }
+
         private void Apply(Connected e)
         {
             AggregateGuid = e.AggregateGuid;
@@ -209,16 +248,30 @@ namespace DomoTroller2.Thermostat.Api.Domain
             HeatSetpoint = e.NewCoolSetpoint;
         }
 
-        private void OnHeatSetpointChanged(CoolSetpointChanged heatSetpointChanged)
+        private void OnHeatSetpointChanged(HeatSetpointChanged heatSetpointChanged)
         {
             AggregateGuid = heatSetpointChanged.AggregateGuid;
-            HeatSetpoint = heatSetpointChanged.NewCoolSetpoint;
+            HeatSetpoint = heatSetpointChanged.NewHeatSetpoint;
+        }
+
+        private void OnCoolSetpointChanged(CoolSetpointChanged heatSetpointChanged)
+        {
+            AggregateGuid = heatSetpointChanged.AggregateGuid;
+            CoolSetpoint = heatSetpointChanged.NewCoolSetpoint;
+        }
+
+        private void OnAmbientTemperatureChanged(AmbientTemperatureChanged ambientTemperatureChanged)
+        {
+            AggregateGuid = ambientTemperatureChanged.AggregateGuid;
+            AmbientTemperature = ambientTemperatureChanged.NewAmbientTemperature;
         }
 
         private void OnConnected(Connected connected)
         {
             AggregateGuid = connected.AggregateGuid;
             HeatSetpoint = connected.HeatSetpoint;
+            CoolSetpoint = connected.CoolSetpoint;
+            AmbientTemperature = connected.Temperature;
         }
     }
 }

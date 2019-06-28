@@ -21,6 +21,9 @@ namespace NestSharp
         public delegate void ThermostatCoolSetpointChangedHandler(Object sender, ThermostatCoolSetpointChangedEventArgs e);
         public event ThermostatCoolSetpointChangedHandler ThermostatCoolSetpointChanged;
 
+        public delegate void ThermostatAmbientTemperatureChangedHandler(Object sender, ThermostatAmbientTemperatureChangedEventArgs e);
+        public event ThermostatAmbientTemperatureChangedHandler ThermostatAmbientTemperatureChanged;
+
         public NestApi (string clientId, string clientSecret)
         {
             ClientId = clientId;
@@ -145,6 +148,15 @@ namespace NestSharp
                             if (e.Path.Contains("ambient_temperature_f"))
                             {
                                 Trace.TraceInformation("Current temperature of Nest Thermostat has been updated to: {0}.", e.Data);
+                                double newValue;
+                                double.TryParse(e.Data, out newValue);
+                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
+                                    string.Empty).Replace($"/ambient_temperature_f", string.Empty);
+                                Guid thermostatGuid;
+                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                ThermostatAmbientTemperatureChangedEventArgs ambientTemperatureChangedArgs =
+                                new ThermostatAmbientTemperatureChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                OnThermostatAmbientTemperatureChanged(ambientTemperatureChangedArgs);
                             }
                             else if (e.Path.Contains("target_temperature_low_f"))
                             {
@@ -313,6 +325,15 @@ namespace NestSharp
 
             return JObject.Parse (data);
         }            
+
+        protected virtual void OnThermostatAmbientTemperatureChanged(ThermostatAmbientTemperatureChangedEventArgs e)
+        {
+            ThermostatAmbientTemperatureChangedHandler handler = ThermostatAmbientTemperatureChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
 
         protected virtual void OnThermostatHeatSetpointChanged(ThermostatHeatSetpointChangedEventArgs e)
         {
