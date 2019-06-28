@@ -32,7 +32,6 @@ namespace DomoTroller2.Api.Handlers.Thermostat
 
             Repository<Domain.Thermostat> thermostatRepo = new Repository<Domain.Thermostat>(message.EventStore);
 
-            var existingItems = message.EventStore.GetAllEvents(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));
             HeatSetpointChangeCommand cmd = new HeatSetpointChangeCommand(tenantId, message.ThermostatId, message.Id, message.NewHeatSetpoint);
 
             var found = thermostatRepo.GetById(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));
@@ -52,7 +51,6 @@ namespace DomoTroller2.Api.Handlers.Thermostat
 
             Repository<Domain.Thermostat> thermostatRepo = new Repository<Domain.Thermostat>(message.EventStore);
 
-            var existingItems = message.EventStore.GetAllEvents(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));
             CoolSetpointChangeCommand cmd = new CoolSetpointChangeCommand(tenantId, message.ThermostatId, message.Id, message.NewCoolSetpoint);
 
             var found = thermostatRepo.GetById(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));

@@ -2,7 +2,7 @@
 
 namespace DomoTroller2.ESFramework.Common.Interfaces
 {
-    public interface IRepository<T> where T : Aggregate, new()
+    public interface IRepository<T> where T : IAggregate, new()
     {
         T GetById(CompositeAggregateId aggregateId);
     }
