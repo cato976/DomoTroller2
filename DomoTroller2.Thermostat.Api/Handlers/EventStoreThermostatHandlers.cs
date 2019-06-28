@@ -1,7 +1,7 @@
 ﻿using DomoTroller2.ESEvents.Common.Events.Thermostat;
 using DomoTroller2.ESFramework.Common.Interfaces;
 
-namespace DomoTroller2.Api.Handlers.Thermostat
+namespace DomoTroller2.Thermostat.Api.Handlers
 {
     public class EventStoreThermostatHandlers
     {

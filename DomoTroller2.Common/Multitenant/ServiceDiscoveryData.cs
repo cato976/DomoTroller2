@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace DomoTroller2.Api.Multitenant
+namespace DomoTroller2.Common.Multitenant
 {
     public class ServiceDiscoveryData
     {

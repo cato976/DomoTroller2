@@ -6,7 +6,6 @@ using DomoTroller2.Api.Handlers.Device;
 using DomoTroller2.Api.Handlers.Unit;
 using DomoTroller2.Api.Handlers.Controller;
 using DomoTroller2.ESEvents.Common.Events.Controller;
-using DomoTroller2.Api.Handlers.Thermostat;
 
 namespace DomoTroller2.Api.Handlers
 {
@@ -26,9 +25,6 @@ namespace DomoTroller2.Api.Handlers
             
             var controllerHandlers = new EventStoreControllerHandlers(eventStore);
             eventBus.RegisterEventHandler<Connected>(controllerHandlers.Handler);
-
-            var thermostatHandlers = new EventStoreThermostatHandlers(eventStore);
-            eventBus.RegisterEventHandler<ESEvents.Common.Events.Thermostat.Connected>(thermostatHandlers.Handler);
         }
     }
 }
