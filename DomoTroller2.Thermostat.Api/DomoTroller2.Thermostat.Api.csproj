@@ -6,26 +6,29 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Controller.Common\Controller.Common.csproj" />
-    <ProjectReference Include="..\DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj" />
-    <ProjectReference Include="..\Device.Common\Device.Common.csproj" />
+    <ProjectReference Include="..\DomoTroller2.Common\DomoTroller2.Common.csproj" />
     <ProjectReference Include="..\DomoTroller2.ESEvents.Common\DomoTroller2.ESEvents.Common.csproj" />
+    <ProjectReference Include="..\DomoTroller2.ESFramework.Common\DomoTroller2.ESFramework.Common.csproj" />
     <ProjectReference Include="..\DomoTroller2.EventStore\DomoTroller2.EventStore.csproj" />
     <ProjectReference Include="..\DomoTrollerShare2\DomoTrollerShare2.csproj" />
     <ProjectReference Include="..\Thermostat.Common\Thermostat.Common.csproj" />
-    <ProjectReference Include="..\Unit.Common\Unit.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="accesstoken.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DomoTroller2.Api.Commands.Thermostat
+namespace DomoTroller2.Thermostat.Api.Commands
 {
     public class ConnectToThermostatCommand
     {

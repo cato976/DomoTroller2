@@ -1,14 +1,15 @@
-﻿using DomoTroller2.Api.Commands.Thermostat;
+﻿using DomoTroller2.Common;
 using DomoTroller2.Common.CommandBus;
 using DomoTroller2.ESEvents.Common.Events.Thermostat;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
 using DomoTroller2.EventStore.Exceptions;
+using DomoTroller2.Thermostat.Api.Commands;
 using System;
 using System.Diagnostics;
 using Thermostat.Common.Command;
 
-namespace DomoTroller2.Api.Domain
+namespace DomoTroller2.Thermostat.Api.Domain
 {
     public class Thermostat : Aggregate
     {

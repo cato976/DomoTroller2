@@ -1,21 +1,21 @@
 ﻿using System;
 
-namespace DomoTroller2.Api.Commands.Thermostat
+namespace DomoTroller2.Thermostat.Api.Commands
 {
-    public class CoolSetpointChangeCommand
+    public class HeatSetpointChangeCommand
     {
-        public CoolSetpointChangeCommand(Guid tenantId, string thermostatId, Guid thermostatGuid, 
-            double? newCoolSetpoint)
+        public HeatSetpointChangeCommand(Guid tenantId, string thermostatId, Guid thermostatGuid, 
+            double? newHeatSetpoint)
         {
             TenantId = tenantId;
             ThermostatId = thermostatId;
             ThermostatGuid = thermostatGuid;
-            NewCoolSetpoint = newCoolSetpoint;
+            NewHeatSetpoint = newHeatSetpoint;
         }
 
         public Guid TenantId { get; private set; }
         public string ThermostatId { get; private set; }
         public Guid ThermostatGuid { get; private set; }
-        public double? NewCoolSetpoint { get; set; }
+        public double? NewHeatSetpoint { get; set; }
     }
 }

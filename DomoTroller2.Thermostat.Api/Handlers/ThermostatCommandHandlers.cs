@@ -1,12 +1,12 @@
-﻿using DomoTroller2.Api.Commands.Thermostat;
-using DomoTroller2.ESEvents.Common.Events.Thermostat;
+﻿using DomoTroller2.ESEvents.Common.Events.Thermostat;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.EventStore;
+using DomoTroller2.Thermostat.Api.Commands;
 using System;
 using System.Linq;
 using Thermostat.Common.Command;
 
-namespace DomoTroller2.Api.Handlers.Thermostat
+namespace DomoTroller2.Thermostat.Api.Handlers
 {
     public class ThermostatCommandHandlers
     {

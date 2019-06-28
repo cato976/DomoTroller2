@@ -1,8 +1,8 @@
-﻿using DomoTroller2.Api.Commands.Thermostat;
-using DomoTroller2.Api.Handlers.Thermostat;
-using DomoTroller2.ESEvents.Common.Events.Thermostat;
+﻿using DomoTroller2.ESEvents.Common.Events.Thermostat;
 using DomoTroller2.ESFramework.Common.Base;
 using DomoTroller2.ESFramework.Common.Interfaces;
+using DomoTroller2.Thermostat.Api.Commands;
+using DomoTroller2.Thermostat.Api.Handlers;
 using Moq;
 using NUnit.Framework;
 using System;
@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Thermostat.Common.Command;
 
-namespace DomoTroller2.Api.Tests
+namespace DomoTroller2.Thermostat.Api.Tests
 {
     public class ThermostatEventTest
     {

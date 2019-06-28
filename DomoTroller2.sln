@@ -39,6 +39,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NestSharp2", "NestSharp2\Ne
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Thermostat.Common", "Thermostat.Common\Thermostat.Common.csproj", "{1A66EB90-E211-4583-93C8-F36977AFDFA8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Thermostat.Api", "DomoTroller2.Thermostat.Api\DomoTroller2.Thermostat.Api.csproj", "{3FCCDF08-C0CD-4981-95FD-242345F953E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomoTroller2.Thermostat.Api.Tests", "DomoTroller2.Thermostat.Api.Tests\DomoTroller2.Thermostat.Api.Tests.csproj", "{4DBD88B8-1185-4972-8B43-C24884B7CEBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -117,6 +121,14 @@ Global
 		{1A66EB90-E211-4583-93C8-F36977AFDFA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A66EB90-E211-4583-93C8-F36977AFDFA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A66EB90-E211-4583-93C8-F36977AFDFA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FCCDF08-C0CD-4981-95FD-242345F953E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FCCDF08-C0CD-4981-95FD-242345F953E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FCCDF08-C0CD-4981-95FD-242345F953E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FCCDF08-C0CD-4981-95FD-242345F953E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DBD88B8-1185-4972-8B43-C24884B7CEBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DBD88B8-1185-4972-8B43-C24884B7CEBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DBD88B8-1185-4972-8B43-C24884B7CEBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DBD88B8-1185-4972-8B43-C24884B7CEBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
