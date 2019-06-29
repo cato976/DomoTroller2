@@ -176,5 +176,21 @@ namespace DomoTroller2.Thermostat.Api.Tests
             var events = thermo.GetUncommittedEvents();
             events.Count().ShouldEqual(1);
         }
+
+        [Test]
+        public void HVAC_Mode_Changed_Should_Update_HVAC_Mode()
+        {
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 40, 50, 80, "Cool", "Idel");
+            SystemModeChangeCommand stateChangeCmd = new SystemModeChangeCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), "Off");
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
+
+            var thermo = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
+            thermo.ChangeSystemMode(eventMetadata, moqEventStore.Object, stateChangeCmd, thermo.Version);
+            moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
+            var events = thermo.GetUncommittedEvents();
+            events.Count().ShouldEqual(1);
+        }
     }
 }

@@ -30,6 +30,9 @@ namespace NestSharp
         public delegate void ThermostatSystemStatusChangedHandler(Object sender, ThermostatSystemStatusChangedEventArgs e);
         public event ThermostatSystemStatusChangedHandler ThermostatSystemStatusChanged;
 
+        public delegate void ThermostatSystemModeChangedHandler(Object sender, ThermostatSystemModeChangedEventArgs e);
+        public event ThermostatSystemModeChangedHandler ThermostatSystemModeChanged;
+
         public NestApi (string clientId, string clientSecret)
         {
             ClientId = clientId;
@@ -184,9 +187,20 @@ namespace NestSharp
                                     string.Empty).Replace($"/hvac_state", string.Empty);
                                 Guid thermostatGuid;
                                 thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatSystemStatusChangedEventArgs humidityChangedArgs =
+                                ThermostatSystemStatusChangedEventArgs systemStatusChangedArgs =
                                 new ThermostatSystemStatusChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
-                                OnThermostatSystemStatusChanged(humidityChangedArgs);
+                                OnThermostatSystemStatusChanged(systemStatusChangedArgs);
+                            }
+                            else if (e.Path.Contains("hvac_mode"))
+                            {
+                                Trace.TraceInformation("Current mode of Nest Thermostat has been updated to: {0}.", e.Data);
+                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
+                                    string.Empty).Replace($"/hvac_mode", string.Empty);
+                                Guid thermostatGuid;
+                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                ThermostatSystemModeChangedEventArgs systemModeChangedArgs =
+                                new ThermostatSystemModeChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
+                                OnThermostatSystemModeChanged(systemModeChangedArgs);
                             }
                             else if (e.Path.Contains("target_temperature_low_f"))
                             {
@@ -377,6 +391,15 @@ namespace NestSharp
         protected virtual void OnThermostatSystemStatusChanged(ThermostatSystemStatusChangedEventArgs e)
         {
             ThermostatSystemStatusChangedHandler handler = ThermostatSystemStatusChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatSystemModeChanged(ThermostatSystemModeChangedEventArgs e)
+        {
+            ThermostatSystemModeChangedHandler handler = ThermostatSystemModeChanged;
             if (handler != null)
             {
                 handler(this, e);
