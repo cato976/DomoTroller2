@@ -124,8 +124,6 @@ namespace DomoTroller2.Thermostat.Api.Tests
 
             var thermo = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
             thermo.ChangeHeatSetpoint(eventMetadata, moqEventStore.Object, heatSetpointCmd, thermo.Version);
-            ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(moqEventStore.Object, cmd.ThermostatId, 
-                cmd.ThermostatAggregateId, Guid.NewGuid(), heatSetpointCmd.NewHeatSetpoint);
             moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
             var events = thermo.GetUncommittedEvents();
             events.Count().ShouldEqual(1);
@@ -142,8 +140,22 @@ namespace DomoTroller2.Thermostat.Api.Tests
 
             var thermo = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
             thermo.ChangeAmbientTemperature(eventMetadata, moqEventStore.Object, ambientTemperatureChangeCmd, thermo.Version);
-            ChangeHeatSetpoint changeHeatSetpointCommand = new ChangeHeatSetpoint(moqEventStore.Object, cmd.ThermostatId, 
-                cmd.ThermostatAggregateId, Guid.NewGuid(), ambientTemperatureChangeCmd.NewAmbientTemperature);
+            moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
+            var events = thermo.GetUncommittedEvents();
+            events.Count().ShouldEqual(1);
+        }
+
+        [Test]
+        public void Humidity_Changed_Should_Update_Humidity()
+        {
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 40, 50, 80, "Cool", "Idel");
+            HumidityChangeCommand humidityChangeCmd = new HumidityChangeCommand(Guid.NewGuid(), "ThermostatId", Guid.NewGuid(), 67);
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
+
+            var thermo = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
+            thermo.ChangeHumidity(eventMetadata, moqEventStore.Object, humidityChangeCmd, thermo.Version);
             moqEventStore.Verify(m => m.SaveEvents(It.IsAny<CompositeAggregateId>(), It.IsAny<IEnumerable<IEvent>>()), Times.Exactly(2));
             var events = thermo.GetUncommittedEvents();
             events.Count().ShouldEqual(1);

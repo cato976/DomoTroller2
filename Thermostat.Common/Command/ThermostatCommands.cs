@@ -68,4 +68,23 @@ namespace Thermostat.Common.Command
         public  IEventStore EventStore { get; private set; }
         
     }
+
+    public class ChangeHumidity : ICommand
+    {
+        public ChangeHumidity(IEventStore eventStore, string thermostatId, Guid id, Guid tenantId, double? newHumidity)
+        {
+            ThermostatId = thermostatId;
+            Id = id;
+            TenantId = tenantId;
+            NewHumidity = newHumidity;
+            EventStore = eventStore;
+        }
+
+        public string ThermostatId { get; private set; }
+        public Guid Id { get; private set; }
+        public Guid TenantId { get; private set; }
+        public double? NewHumidity { get; private set; }
+        public  IEventStore EventStore { get; private set; }
+        
+    }
 }

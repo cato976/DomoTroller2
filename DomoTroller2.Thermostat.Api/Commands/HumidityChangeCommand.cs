@@ -2,20 +2,20 @@
 
 namespace DomoTroller2.Thermostat.Api.Commands
 {
-    public class AmbientTemperatureChangeCommand
+    public class HumidityChangeCommand
     {
-        public AmbientTemperatureChangeCommand(Guid tenantId, string thermostatId, 
-            Guid thermostatGuid, double? newAmbientTemperature)
+        public HumidityChangeCommand(Guid tenantId, string thermostatId, 
+            Guid thermostatGuid, double? newHumidity)
         {
             TenantId = tenantId;
             ThermostatId = thermostatId;
             ThermostatGuid = thermostatGuid;
-            NewAmbientTemperature = newAmbientTemperature;
+            NewHumidity = newHumidity;
         }
 
         public Guid TenantId { get; private set; }
         public string ThermostatId { get; private set; }
         public Guid ThermostatGuid { get; private set; }
-        public double? NewAmbientTemperature { get; private set; }
+        public double? NewHumidity { get; private set; }
     }
 }

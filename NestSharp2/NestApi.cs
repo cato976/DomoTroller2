@@ -24,6 +24,9 @@ namespace NestSharp
         public delegate void ThermostatAmbientTemperatureChangedHandler(Object sender, ThermostatAmbientTemperatureChangedEventArgs e);
         public event ThermostatAmbientTemperatureChangedHandler ThermostatAmbientTemperatureChanged;
 
+        public delegate void ThermostatHumidityChangedHandler(Object sender, ThermostatHumidityChangedEventArgs e);
+        public event ThermostatHumidityChangedHandler ThermostatHumidityChanged;
+
         public NestApi (string clientId, string clientSecret)
         {
             ClientId = clientId;
@@ -157,6 +160,19 @@ namespace NestSharp
                                 ThermostatAmbientTemperatureChangedEventArgs ambientTemperatureChangedArgs =
                                 new ThermostatAmbientTemperatureChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
                                 OnThermostatAmbientTemperatureChanged(ambientTemperatureChangedArgs);
+                            }
+                            else if (e.Path.Contains("humidity"))
+                            {
+                                Trace.TraceInformation("Current humidity of Nest Thermostat has been updated to: {0}%.", e.Data);
+                                double newValue;
+                                double.TryParse(e.Data, out newValue);
+                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
+                                    string.Empty).Replace($"/humidity", string.Empty);
+                                Guid thermostatGuid;
+                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                ThermostatHumidityChangedEventArgs humidityChangedArgs =
+                                new ThermostatHumidityChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                OnThermostatHumidityChanged(humidityChangedArgs);
                             }
                             else if (e.Path.Contains("target_temperature_low_f"))
                             {
@@ -329,6 +345,15 @@ namespace NestSharp
         protected virtual void OnThermostatAmbientTemperatureChanged(ThermostatAmbientTemperatureChangedEventArgs e)
         {
             ThermostatAmbientTemperatureChangedHandler handler = ThermostatAmbientTemperatureChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatHumidityChanged(ThermostatHumidityChangedEventArgs e)
+        {
+            ThermostatHumidityChangedHandler handler = ThermostatHumidityChanged;
             if (handler != null)
             {
                 handler(this, e);

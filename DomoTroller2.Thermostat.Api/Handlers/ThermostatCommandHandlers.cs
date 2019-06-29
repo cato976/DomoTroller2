@@ -75,6 +75,24 @@ namespace DomoTroller2.Thermostat.Api.Handlers
             found.ChangeAmbientTemperature(eventMetadata, message.EventStore, cmd, ((Aggregate)found).EventMetadata.EventNumber);
         }
 
+        public void Handle(ChangeHumidity message)
+        {
+            //Validate
+            ValidateHumidity(message.NewHumidity);
+
+            //Process
+            var tenantId = message.TenantId;
+            var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
+
+            Repository<Domain.Thermostat> thermostatRepo = new Repository<Domain.Thermostat>(message.EventStore);
+
+            HumidityChangeCommand cmd = new HumidityChangeCommand(tenantId, message.ThermostatId, message.Id, message.NewHumidity);
+
+            var found = thermostatRepo.GetById(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));
+
+            found.ChangeHumidity(eventMetadata, message.EventStore, cmd, ((Aggregate)found).EventMetadata.EventNumber);
+        }
+
         private static void ValidateSetpoint(double? setpoint)
         {
             if (setpoint == null)
@@ -88,6 +106,14 @@ namespace DomoTroller2.Thermostat.Api.Handlers
             if (ambientTemperature == null)
             {
                 throw new ArgumentNullException("Invalid ambient temperature specified: cannot be null.");
+            }
+        }
+
+        private static void ValidateHumidity(double? humidity)
+        {
+            if (humidity == null)
+            {
+                throw new ArgumentNullException("Invalid humidity specified: cannot be null.");
             }
         }
 

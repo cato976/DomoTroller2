@@ -95,7 +95,6 @@ namespace DomoTroller2.Thermostat.Api.Tests
             moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
 
             var p = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
-            AmbientTemperatureChangeCommand ambientTemperatureChangeCommand = new AmbientTemperatureChangeCommand(Guid.NewGuid(), thermostatId, thermostatGuid, 61);
             ChangeAmbientTemperature changeAmbientTemperatureCommand = new ChangeAmbientTemperature(moqEventStore.Object, thermostatId, thermostatGuid, 
                  Guid.NewGuid(), (double)cmd.Temperature);
             var handler = new ThermostatCommandHandlers();
@@ -105,6 +104,28 @@ namespace DomoTroller2.Thermostat.Api.Tests
             Assert.AreNotEqual(Guid.Empty, p.AggregateGuid);
         }
 
+
+        [Test]
+        public void Should_Change_Humidity_For_Thermostat()
+        {
+            var moqEventStore = new Mock<IEventStore>();
+            var eventMetadata = new EventMetadata(Guid.NewGuid(), "TestCategory", "TestCorrelationId", Guid.NewGuid(), Guid.NewGuid(), DateTimeOffset.UtcNow);
+            var thermostatId = "termostatId";
+            var thermostatGuid = Guid.NewGuid();
+            ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(Guid.NewGuid(), thermostatId, thermostatGuid, 76, 60.9, 77.2, "Heat", "Heating", 77.4);
+            List<IEvent> connected = new List<IEvent>();
+            connected.Add(new ESEvents.Common.Events.Thermostat.Connected(Guid.NewGuid(), DateTimeOffset.UtcNow, eventMetadata, 78, 56, 76, "Off", "Idel", 80));
+            moqEventStore.Setup(storage => storage.GetAllEvents(It.IsAny<CompositeAggregateId>())).Returns(connected);
+
+            var p = Domain.Thermostat.ConnectToThermostat(eventMetadata, moqEventStore.Object, cmd);
+            ChangeHumidity changeHumidityCommand = new ChangeHumidity(moqEventStore.Object, thermostatId, thermostatGuid, 
+                 Guid.NewGuid(), (double)cmd.Temperature);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeHumidityCommand);
+
+            Assert.IsNotNull(p.AggregateGuid);
+            Assert.AreNotEqual(Guid.Empty, p.AggregateGuid);
+        }
         [Test]
         public void Connect_To_Thermostat_Should_Send_One_Event_To_EventStore()
         {

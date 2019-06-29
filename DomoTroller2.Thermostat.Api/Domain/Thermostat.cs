@@ -19,6 +19,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
             Register<CoolSetpointChanged>(OnCoolSetpointChanged);
             Register<HeatSetpointChanged>(OnHeatSetpointChanged);
             Register<AmbientTemperatureChanged>(OnAmbientTemperatureChanged);
+            Register<HumidityChanged>(OnHumidityChanged);
         }
 
         public Thermostat(Guid thermostatGuid)
@@ -55,13 +56,14 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public double HeatSetpoint { get; private set; }
         public double CoolSetpoint { get; private set; }
         public double AmbientTemperature { get; private set; }
+        public double? Humidity { get; private set; }
 
         private new readonly IEventMetadata EventMetadata;
         private readonly IEventStore EventStore;
 
         public static Thermostat ConnectToThermostat(IEventMetadata eventMetadata, IEventStore eventStore, ConnectToThermostatCommand cmd)
         {
-            ValidateTemputure(cmd.Temperature);
+            ValidateTemperature(cmd.Temperature);
             ValidateSetpoint(cmd.HeatSetpoint);
             ValidateCoolSetpoint(cmd.CoolSetpoint);
             ValidateMode(cmd.Mode);
@@ -137,7 +139,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public void ChangeAmbientTemperature(IEventMetadata eventMetadata, IEventStore eventStore,
             AmbientTemperatureChangeCommand cmd, long orginalEventNumber)
         {
-            ValidateAmbientTemperature(cmd.NewAmbientTemperature);
+            ValidateTemperature(cmd.NewAmbientTemperature);
             ValidateEventNumber(orginalEventNumber);
             ValidateCategory(eventMetadata.Category);
 
@@ -148,6 +150,33 @@ namespace DomoTroller2.Thermostat.Api.Domain
 
             ApplyEvent(new AmbientTemperatureChanged(cmd.ThermostatGuid, DateTimeOffset.UtcNow, eventMetadata,
                 (double)cmd.NewAmbientTemperature), -4);
+
+            // Send Event to Event Store
+            var events = this.GetUncommittedEvents();
+            try
+            {
+                EventSender.SendEvent(eventStore, new CompositeAggregateId(eventMetadata.TenantId, AggregateGuid, eventMetadata.Category), events);
+            }
+            catch (ConnectionFailure conn)
+            {
+                Trace.TraceError($"There was a connection error: {conn}");
+            }
+        }
+
+        public void ChangeHumidity(IEventMetadata eventMetadata, IEventStore eventStore,
+            HumidityChangeCommand cmd, long orginalEventNumber)
+        {
+            ValidateHumidity(cmd.NewHumidity);
+            ValidateEventNumber(orginalEventNumber);
+            ValidateCategory(eventMetadata.Category);
+
+            var changeHumidityCommand = new ChangeHumidity(eventStore, cmd.ThermostatId,
+                cmd.ThermostatGuid, cmd.TenantId, (double)cmd.NewHumidity);
+            var commandBus = CommandBus.Instance;
+            commandBus.Execute(changeHumidityCommand);
+
+            ApplyEvent(new HumidityChanged(cmd.ThermostatGuid, DateTimeOffset.UtcNow, eventMetadata,
+                (double)cmd.NewHumidity), -4);
 
             // Send Event to Event Store
             var events = this.GetUncommittedEvents();
@@ -173,7 +202,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
             }
         }
 
-        private static void ValidateTemputure(double? temputure)
+        private static void ValidateTemperature(double? temputure)
         {
             if (temputure == null)
             {
@@ -229,14 +258,13 @@ namespace DomoTroller2.Thermostat.Api.Domain
             }
         }
 
-        private static void ValidateAmbientTemperature(double? ambientTemperature)
+        private static void ValidateHumidity(double? humidity)
         {
-            if (ambientTemperature == null)
+            if (humidity == null)
             {
-                throw new ArgumentNullException("Invalid ambient temperature specified: cannot be null.");
+                throw new ArgumentNullException("Invalid humidity temperature specified: cannot be null.");
             }
         }
-
         private void Apply(Connected e)
         {
             AggregateGuid = e.AggregateGuid;
@@ -266,12 +294,19 @@ namespace DomoTroller2.Thermostat.Api.Domain
             AmbientTemperature = ambientTemperatureChanged.NewAmbientTemperature;
         }
 
+        private void OnHumidityChanged(HumidityChanged humidityChanged)
+        {
+            AggregateGuid = humidityChanged.AggregateGuid;
+            Humidity = humidityChanged.NewHumidity;
+        }
+
         private void OnConnected(Connected connected)
         {
             AggregateGuid = connected.AggregateGuid;
             HeatSetpoint = connected.HeatSetpoint;
             CoolSetpoint = connected.CoolSetpoint;
             AmbientTemperature = connected.Temperature;
+            Humidity = connected.Humidity;
         }
     }
 }
