@@ -219,6 +219,33 @@ namespace DomoTroller2.Thermostat.Api.Domain
             }
         }
 
+        public void ChangeSystemMode(IEventMetadata eventMetadata, IEventStore eventStore,
+            SystemModeChangeCommand cmd, long orginalEventNumber)
+        {
+            ValidateSystemMode(cmd.NewSystemMode);
+            ValidateEventNumber(orginalEventNumber);
+            ValidateCategory(eventMetadata.Category);
+
+            var changeSystemModeCommand = new ChangeSystemMode(eventStore, cmd.ThermostatId,
+                cmd.ThermostatGuid, cmd.TenantId, cmd.NewSystemMode);
+            var commandBus = CommandBus.Instance;
+            commandBus.Execute(changeSystemModeCommand);
+
+            ApplyEvent(new SystemModeChanged(cmd.ThermostatGuid, DateTimeOffset.UtcNow, eventMetadata,
+                cmd.NewSystemMode), -4);
+
+            // Send Event to Event Store
+            var events = this.GetUncommittedEvents();
+            try
+            {
+                EventSender.SendEvent(eventStore, new CompositeAggregateId(eventMetadata.TenantId, AggregateGuid, eventMetadata.Category), events);
+            }
+            catch (ConnectionFailure conn)
+            {
+                Trace.TraceError($"There was a connection error: {conn}");
+            }
+        }
+
         private static void ValidateCategory(string category)
         {
             if (string.IsNullOrWhiteSpace(category))
@@ -268,6 +295,14 @@ namespace DomoTroller2.Thermostat.Api.Domain
             if (string.IsNullOrWhiteSpace(systemStatus))
             {
                 throw new ArgumentNullException("Invalid System Status specified: cannot be null or empty.");
+            }
+        }
+
+        private static void ValidateSystemMode(string systemMode)
+        {
+            if (string.IsNullOrWhiteSpace(systemMode))
+            {
+                throw new ArgumentNullException("Invalid System Mode specified: cannot be null or empty.");
             }
         }
 

@@ -52,6 +52,9 @@ namespace DomoTrollerShare2
         public delegate void SystemStatusSendEvent(Object sender, ThermostatSystemStatusChangedEventArgs e);
         public event SystemStatusSendEvent ThermostatSystemStatusChanged;
 
+        public delegate void SystemModeSendEvent(Object sender, ThermostatSystemModeChangedEventArgs e);
+        public event SystemModeSendEvent ThermostatSystemModeChanged;
+
         private static clsHAC HAC = null;
         private static Guid ControllerId = Guid.Empty;
         private static IConfigurationRoot Configuration { get; set; }
@@ -183,6 +186,15 @@ namespace DomoTrollerShare2
         protected virtual void OnThermostatSystemStatusChanged(ThermostatSystemStatusChangedEventArgs e)
         {
             SystemStatusSendEvent handler = ThermostatSystemStatusChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatSystemModeChanged(ThermostatSystemModeChangedEventArgs e)
+        {
+            SystemModeSendEvent handler = ThermostatSystemModeChanged;
             if (handler != null)
             {
                 handler(this, e);
@@ -1850,6 +1862,7 @@ namespace DomoTrollerShare2
                 nest.ThermostatAmbientTemperatureChanged += SendEventForAmbientTemperatureChanged;
                 nest.ThermostatHumidityChanged += SendEventForHumidityChanged;
                 nest.ThermostatSystemStatusChanged += Nest_ThermostatSystemStatusChanged;
+                nest.ThermostatSystemModeChanged += Nest_ThermostatSystemModeChanged;
 
                 nest.SubscribeToNestDeviceDataUpdates(ControllerId, thermostatList);
             });
@@ -1889,6 +1902,16 @@ namespace DomoTrollerShare2
             ThermostatSystemStatusChangedEventArgs systemStatusChangedArgs 
                 = new ThermostatSystemStatusChangedEventArgs(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewSystemStatus);
             OnThermostatSystemStatusChanged(systemStatusChangedArgs);
+        }
+
+        private void Nest_ThermostatSystemModeChanged(object sender, NestSharp2.EventArguments.ThermostatSystemModeChangedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.NewSystemMode))
+            {
+                ThermostatSystemModeChangedEventArgs systemModeChangedArgs
+                    = new ThermostatSystemModeChangedEventArgs(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewSystemMode);
+                OnThermostatSystemModeChanged(systemModeChangedArgs);
+            }
         }
 
         private static async Task<Devices> GetNestDevices()
