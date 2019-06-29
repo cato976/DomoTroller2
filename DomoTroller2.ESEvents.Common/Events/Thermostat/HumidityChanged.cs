@@ -7,7 +7,8 @@ namespace DomoTroller2.ESEvents.Common.Events.Thermostat
 {
     public class HumidityChanged : Event
     {
-        public HumidityChanged(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata, double newHumidity) : base(aggregateGuid, effectiveDateTime, metadata)
+        public HumidityChanged(Guid aggregateGuid, DateTimeOffset effectiveDateTime, IEventMetadata metadata,
+            double newHumidity) : base(aggregateGuid, effectiveDateTime, metadata)
         {
             AggregateGuid = aggregateGuid;
             NewHumidity = newHumidity;

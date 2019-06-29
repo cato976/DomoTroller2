@@ -43,9 +43,11 @@ namespace DomoTroller2.Thermostat.Api
             domoShare.ThermostatCoolSetpointChanged += DomoShare_ThermostatCoolSetpointChanged;
             domoShare.ThermostatAmbientTemperatureChanged += DomoShare_ThermostatAmbientTemperatureChanged;
             domoShare.ThermostatHumidityChanged += DomoShare_ThermostatHumidityChanged;
+            domoShare.ThermostatSystemStatusChanged += DomoShare_ThermostatSystemStatusChanged;
 
             CreateWebHostBuilder(args).Build().Run();
         }
+
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
@@ -102,6 +104,17 @@ namespace DomoTroller2.Thermostat.Api
                 e.TenantId, (double)e.NewHumidity);
             var handler = new ThermostatCommandHandlers();
             handler.Handle(changeHumidityCommand);
+        }
+
+        private static void DomoShare_ThermostatSystemStatusChanged(object sender, ThermostatSystemStatusChangedEventArgs e)
+        {
+            var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
+            SystemStatusChangeCommand cmd = new SystemStatusChangeCommand(e.TenantId, e.ThermostatId, 
+                e.ThermostatGuid, e.NewSystemStatus);
+            ChangeSystemStatus changeSystemStatusCommand = new ChangeSystemStatus(EventStore, e.ThermostatId, e.ThermostatGuid,
+                e.TenantId, e.NewSystemStatus);
+            var handler = new ThermostatCommandHandlers();
+            handler.Handle(changeSystemStatusCommand);
         }
 
         private static void ConnectToEventStore()

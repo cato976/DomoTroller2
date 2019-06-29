@@ -93,6 +93,24 @@ namespace DomoTroller2.Thermostat.Api.Handlers
             found.ChangeHumidity(eventMetadata, message.EventStore, cmd, ((Aggregate)found).EventMetadata.EventNumber);
         }
 
+        public void Handle(ChangeSystemStatus message)
+        {
+            //Validate
+            ValidateSystemStatus(message.NewSystemState);
+
+            //Process
+            var tenantId = message.TenantId;
+            var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
+
+            Repository<Domain.Thermostat> thermostatRepo = new Repository<Domain.Thermostat>(message.EventStore);
+
+            SystemStatusChangeCommand cmd = new SystemStatusChangeCommand(tenantId, message.ThermostatId, message.Id, message.NewSystemState);
+
+            var found = thermostatRepo.GetById(new CompositeAggregateId(tenantId, message.Id, "Thermostat"));
+
+            found.ChangeSystemState(eventMetadata, message.EventStore, cmd, ((Aggregate)found).EventMetadata.EventNumber);
+        }
+
         private static void ValidateSetpoint(double? setpoint)
         {
             if (setpoint == null)
@@ -114,6 +132,14 @@ namespace DomoTroller2.Thermostat.Api.Handlers
             if (humidity == null)
             {
                 throw new ArgumentNullException("Invalid humidity specified: cannot be null.");
+            }
+        }
+
+        private static void ValidateSystemStatus(string systemStatus)
+        {
+            if (string.IsNullOrWhiteSpace(systemStatus))
+            {
+                throw new ArgumentNullException("Invalid System Status specified: cannot be null or empty.");
             }
         }
 
