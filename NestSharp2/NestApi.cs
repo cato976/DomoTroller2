@@ -27,6 +27,9 @@ namespace NestSharp
         public delegate void ThermostatHumidityChangedHandler(Object sender, ThermostatHumidityChangedEventArgs e);
         public event ThermostatHumidityChangedHandler ThermostatHumidityChanged;
 
+        public delegate void ThermostatSystemStatusChangedHandler(Object sender, ThermostatSystemStatusChangedEventArgs e);
+        public event ThermostatSystemStatusChangedHandler ThermostatSystemStatusChanged;
+
         public NestApi (string clientId, string clientSecret)
         {
             ClientId = clientId;
@@ -173,6 +176,17 @@ namespace NestSharp
                                 ThermostatHumidityChangedEventArgs humidityChangedArgs =
                                 new ThermostatHumidityChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
                                 OnThermostatHumidityChanged(humidityChangedArgs);
+                            }
+                            else if (e.Path.Contains("hvac_state"))
+                            {
+                                Trace.TraceInformation("Current state of Nest Thermostat has been updated to: {0}.", e.Data);
+                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
+                                    string.Empty).Replace($"/hvac_state", string.Empty);
+                                Guid thermostatGuid;
+                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                ThermostatSystemStatusChangedEventArgs humidityChangedArgs =
+                                new ThermostatSystemStatusChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
+                                OnThermostatSystemStatusChanged(humidityChangedArgs);
                             }
                             else if (e.Path.Contains("target_temperature_low_f"))
                             {
@@ -354,6 +368,15 @@ namespace NestSharp
         protected virtual void OnThermostatHumidityChanged(ThermostatHumidityChangedEventArgs e)
         {
             ThermostatHumidityChangedHandler handler = ThermostatHumidityChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatSystemStatusChanged(ThermostatSystemStatusChangedEventArgs e)
+        {
+            ThermostatSystemStatusChangedHandler handler = ThermostatSystemStatusChanged;
             if (handler != null)
             {
                 handler(this, e);

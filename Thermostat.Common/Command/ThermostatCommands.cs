@@ -87,4 +87,23 @@ namespace Thermostat.Common.Command
         public  IEventStore EventStore { get; private set; }
         
     }
+
+    public class ChangeSystemStatus : ICommand
+    {
+        public ChangeSystemStatus(IEventStore eventStore, string thermostatId, Guid id, Guid tenantId, string newSystemStatus)
+        {
+            ThermostatId = thermostatId;
+            Id = id;
+            TenantId = tenantId;
+            NewSystemState = newSystemStatus;
+            EventStore = eventStore;
+        }
+
+        public string ThermostatId { get; private set; }
+        public Guid Id { get; private set; }
+        public Guid TenantId { get; private set; }
+        public string NewSystemState { get; private set; }
+        public  IEventStore EventStore { get; private set; }
+        
+    }
 }

@@ -49,6 +49,9 @@ namespace DomoTrollerShare2
         public delegate void HumiditySendEvent(Object sender, ThermostatHumidityChangedEventArgs e);
         public event HumiditySendEvent ThermostatHumidityChanged;
 
+        public delegate void SystemStatusSendEvent(Object sender, ThermostatSystemStatusChangedEventArgs e);
+        public event SystemStatusSendEvent ThermostatSystemStatusChanged;
+
         private static clsHAC HAC = null;
         private static Guid ControllerId = Guid.Empty;
         private static IConfigurationRoot Configuration { get; set; }
@@ -171,6 +174,15 @@ namespace DomoTrollerShare2
         protected virtual void OnThermostatHumidityChanged(ThermostatHumidityChangedEventArgs e)
         {
             HumiditySendEvent handler = ThermostatHumidityChanged;
+            if (handler != null)
+            {
+                handler(this, e);
+            }
+        }
+
+        protected virtual void OnThermostatSystemStatusChanged(ThermostatSystemStatusChangedEventArgs e)
+        {
+            SystemStatusSendEvent handler = ThermostatSystemStatusChanged;
             if (handler != null)
             {
                 handler(this, e);
@@ -1837,12 +1849,14 @@ namespace DomoTrollerShare2
                 nest.ThermostatCoolSetpointChanged += SendEventForCoolSetpointChanged;
                 nest.ThermostatAmbientTemperatureChanged += SendEventForAmbientTemperatureChanged;
                 nest.ThermostatHumidityChanged += SendEventForHumidityChanged;
+                nest.ThermostatSystemStatusChanged += Nest_ThermostatSystemStatusChanged;
 
                 nest.SubscribeToNestDeviceDataUpdates(ControllerId, thermostatList);
             });
 
             t.Start();
         }
+
 
         private void SendEventForHeatSetpointChanged(Object sender, NestSharp2.EventArguments.ThermostatHeatSetpointChangedEventArgs e)
         {
@@ -1868,6 +1882,13 @@ namespace DomoTrollerShare2
             ThermostatHumidityChangedEventArgs ambientTemperatureChangedArgs 
                 = new ThermostatHumidityChangedEventArgs(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewHumidity);
             OnThermostatHumidityChanged(ambientTemperatureChangedArgs);
+        }
+
+        private void Nest_ThermostatSystemStatusChanged(object sender, NestSharp2.EventArguments.ThermostatSystemStatusChangedEventArgs e)
+        {
+            ThermostatSystemStatusChangedEventArgs systemStatusChangedArgs 
+                = new ThermostatSystemStatusChangedEventArgs(e.TenantId, e.ThermostatId, e.ThermostatGuid, e.NewSystemStatus);
+            OnThermostatSystemStatusChanged(systemStatusChangedArgs);
         }
 
         private static async Task<Devices> GetNestDevices()

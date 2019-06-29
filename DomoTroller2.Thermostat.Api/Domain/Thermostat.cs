@@ -20,6 +20,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
             Register<HeatSetpointChanged>(OnHeatSetpointChanged);
             Register<AmbientTemperatureChanged>(OnAmbientTemperatureChanged);
             Register<HumidityChanged>(OnHumidityChanged);
+            Register<SystemStatusChanged>(OnStateChanged);
         }
 
         public Thermostat(Guid thermostatGuid)
@@ -57,6 +58,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public double CoolSetpoint { get; private set; }
         public double AmbientTemperature { get; private set; }
         public double? Humidity { get; private set; }
+        public string SystemStatus { get; private set; }
 
         private new readonly IEventMetadata EventMetadata;
         private readonly IEventStore EventStore;
@@ -190,6 +192,33 @@ namespace DomoTroller2.Thermostat.Api.Domain
             }
         }
 
+        public void ChangeSystemState(IEventMetadata eventMetadata, IEventStore eventStore,
+            SystemStatusChangeCommand cmd, long orginalEventNumber)
+        {
+            ValidateSystemStatus(cmd.NewSystemStatus);
+            ValidateEventNumber(orginalEventNumber);
+            ValidateCategory(eventMetadata.Category);
+
+            var changeSystemStatusCommand = new ChangeSystemStatus(eventStore, cmd.ThermostatId,
+                cmd.ThermostatGuid, cmd.TenantId, cmd.NewSystemStatus);
+            var commandBus = CommandBus.Instance;
+            commandBus.Execute(changeSystemStatusCommand);
+
+            ApplyEvent(new SystemStatusChanged(cmd.ThermostatGuid, DateTimeOffset.UtcNow, eventMetadata,
+                cmd.NewSystemStatus), -4);
+
+            // Send Event to Event Store
+            var events = this.GetUncommittedEvents();
+            try
+            {
+                EventSender.SendEvent(eventStore, new CompositeAggregateId(eventMetadata.TenantId, AggregateGuid, eventMetadata.Category), events);
+            }
+            catch (ConnectionFailure conn)
+            {
+                Trace.TraceError($"There was a connection error: {conn}");
+            }
+        }
+
         private static void ValidateCategory(string category)
         {
             if (string.IsNullOrWhiteSpace(category))
@@ -300,6 +329,12 @@ namespace DomoTroller2.Thermostat.Api.Domain
             Humidity = humidityChanged.NewHumidity;
         }
 
+        private void OnStateChanged(SystemStatusChanged stateChanged)
+        {
+            AggregateGuid = stateChanged.AggregateGuid;
+            SystemStatus = stateChanged.NewSystemStatus;
+        }
+
         private void OnConnected(Connected connected)
         {
             AggregateGuid = connected.AggregateGuid;
@@ -307,6 +342,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
             CoolSetpoint = connected.CoolSetpoint;
             AmbientTemperature = connected.Temperature;
             Humidity = connected.Humidity;
+            SystemStatus = connected.SystemStatus;
         }
     }
 }
