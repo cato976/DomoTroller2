@@ -154,77 +154,85 @@ namespace NestSharp
                 var response = firebaseClient.GetStreaming("devices",
                         changed: (s, e) =>
                         {
-                            if (e.Path.Contains("ambient_temperature_f"))
+                            try
                             {
-                                Trace.TraceInformation("Current temperature of Nest Thermostat has been updated to: {0}.", e.Data);
-                                double newValue;
-                                double.TryParse(e.Data, out newValue);
-                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
-                                    string.Empty).Replace($"/ambient_temperature_f", string.Empty);
-                                Guid thermostatGuid;
-                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatAmbientTemperatureChangedEventArgs ambientTemperatureChangedArgs =
-                                new ThermostatAmbientTemperatureChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
-                                OnThermostatAmbientTemperatureChanged(ambientTemperatureChangedArgs);
+                                if (e.Path.Contains("ambient_temperature_f"))
+                                {
+                                    Trace.TraceInformation("Current temperature of Nest Thermostat has been updated to: {0}.", e.Data);
+                                    double newValue;
+                                    double.TryParse(e.Data, out newValue);
+                                    var thermostatId = e.Path.Replace($"/devices/thermostats/",
+                                        string.Empty).Replace($"/ambient_temperature_f", string.Empty);
+                                    Guid thermostatGuid;
+                                    thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                    ThermostatAmbientTemperatureChangedEventArgs ambientTemperatureChangedArgs =
+                                    new ThermostatAmbientTemperatureChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                    OnThermostatAmbientTemperatureChanged(ambientTemperatureChangedArgs);
+                                }
+                                else if (e.Path.Contains("humidity"))
+                                {
+                                    Trace.TraceInformation("Current humidity of Nest Thermostat has been updated to: {0}%.", e.Data);
+                                    double newValue;
+                                    double.TryParse(e.Data, out newValue);
+                                    var thermostatId = e.Path.Replace($"/devices/thermostats/",
+                                        string.Empty).Replace($"/humidity", string.Empty);
+                                    Guid thermostatGuid;
+                                    thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                    ThermostatHumidityChangedEventArgs humidityChangedArgs =
+                                    new ThermostatHumidityChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                    OnThermostatHumidityChanged(humidityChangedArgs);
+                                }
+                                else if (e.Path.Contains("hvac_state"))
+                                {
+                                    Trace.TraceInformation("Current state of Nest Thermostat has been updated to: {0}.", e.Data);
+                                    var thermostatId = e.Path.Replace($"/devices/thermostats/",
+                                        string.Empty).Replace($"/hvac_state", string.Empty);
+                                    Guid thermostatGuid;
+                                    thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                    ThermostatSystemStatusChangedEventArgs systemStatusChangedArgs =
+                                    new ThermostatSystemStatusChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
+                                    OnThermostatSystemStatusChanged(systemStatusChangedArgs);
+                                }
+                                else if (e.Path.Contains("hvac_mode"))
+                                {
+                                    Trace.TraceInformation("Current mode of Nest Thermostat has been updated to: {0}.", e.Data);
+                                    var thermostatId = e.Path.Replace($"/devices/thermostats/",
+                                        string.Empty).Replace($"/hvac_mode", string.Empty);
+                                    Guid thermostatGuid;
+                                    thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                    ThermostatSystemModeChangedEventArgs systemModeChangedArgs =
+                                    new ThermostatSystemModeChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
+                                    OnThermostatSystemModeChanged(systemModeChangedArgs);
+                                }
+                                else if (e.Path.Contains("target_temperature_low_f"))
+                                {
+                                    Trace.TraceInformation("Heat Setpoint of Nest Thermostat has been updated to: {0}.", e.Data);
+                                    double newValue;
+                                    double.TryParse(e.Data, out newValue);
+                                    var thermostatId = e.Path.Replace($"/devices/thermostats/", string.Empty).Replace($"/target_temperature_low_f", string.Empty);
+                                    Guid thermostatGuid;
+                                    thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                    ThermostatHeatSetpointChangedEventArgs heatSetpointChangedArgs =
+                                    new ThermostatHeatSetpointChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                    OnThermostatHeatSetpointChanged(heatSetpointChangedArgs);
+                                }
+                                else if (e.Path.Contains("target_temperature_high_f"))
+                                {
+                                    Trace.TraceInformation("Cool Setpoint of Nest Thermostat has been updated to: {0}.", e.Data);
+                                    double newValue;
+                                    double.TryParse(e.Data, out newValue);
+                                    var thermostatId = e.Path.Replace($"/devices/thermostats/", string.Empty).Replace($"/target_temperature_high_f", string.Empty);
+                                    Guid thermostatGuid;
+                                    thermostats.TryGetValue(thermostatId, out thermostatGuid);
+                                    ThermostatCoolSetpointChangedEventArgs coolSetpointChangedArgs =
+                                    new ThermostatCoolSetpointChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
+                                    OnThermostatCoolSetpointChanged(coolSetpointChangedArgs);
+                                }
                             }
-                            else if (e.Path.Contains("humidity"))
+                            catch (Exception ex)
                             {
-                                Trace.TraceInformation("Current humidity of Nest Thermostat has been updated to: {0}%.", e.Data);
-                                double newValue;
-                                double.TryParse(e.Data, out newValue);
-                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
-                                    string.Empty).Replace($"/humidity", string.Empty);
-                                Guid thermostatGuid;
-                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatHumidityChangedEventArgs humidityChangedArgs =
-                                new ThermostatHumidityChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
-                                OnThermostatHumidityChanged(humidityChangedArgs);
-                            }
-                            else if (e.Path.Contains("hvac_state"))
-                            {
-                                Trace.TraceInformation("Current state of Nest Thermostat has been updated to: {0}.", e.Data);
-                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
-                                    string.Empty).Replace($"/hvac_state", string.Empty);
-                                Guid thermostatGuid;
-                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatSystemStatusChangedEventArgs systemStatusChangedArgs =
-                                new ThermostatSystemStatusChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
-                                OnThermostatSystemStatusChanged(systemStatusChangedArgs);
-                            }
-                            else if (e.Path.Contains("hvac_mode"))
-                            {
-                                Trace.TraceInformation("Current mode of Nest Thermostat has been updated to: {0}.", e.Data);
-                                var thermostatId = e.Path.Replace($"/devices/thermostats/", 
-                                    string.Empty).Replace($"/hvac_mode", string.Empty);
-                                Guid thermostatGuid;
-                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatSystemModeChangedEventArgs systemModeChangedArgs =
-                                new ThermostatSystemModeChangedEventArgs(tenantId, thermostatId, thermostatGuid, e.Data);
-                                OnThermostatSystemModeChanged(systemModeChangedArgs);
-                            }
-                            else if (e.Path.Contains("target_temperature_low_f"))
-                            {
-                                Trace.TraceInformation("Heat Setpoint of Nest Thermostat has been updated to: {0}.", e.Data);
-                                double newValue;
-                                double.TryParse(e.Data, out newValue);
-                                var thermostatId = e.Path.Replace($"/devices/thermostats/", string.Empty).Replace($"/target_temperature_low_f", string.Empty);
-                                Guid thermostatGuid;
-                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatHeatSetpointChangedEventArgs heatSetpointChangedArgs =
-                                new ThermostatHeatSetpointChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
-                                OnThermostatHeatSetpointChanged(heatSetpointChangedArgs);
-                            }
-                            else if (e.Path.Contains("target_temperature_high_f"))
-                            {
-                                Trace.TraceInformation("Cool Setpoint of Nest Thermostat has been updated to: {0}.", e.Data);
-                                double newValue;
-                                double.TryParse(e.Data, out newValue);
-                                var thermostatId = e.Path.Replace($"/devices/thermostats/", string.Empty).Replace($"/target_temperature_high_f", string.Empty);
-                                Guid thermostatGuid;
-                                thermostats.TryGetValue(thermostatId, out thermostatGuid);
-                                ThermostatCoolSetpointChangedEventArgs coolSetpointChangedArgs =
-                                new ThermostatCoolSetpointChangedEventArgs(tenantId, thermostatId, thermostatGuid, newValue);
-                                OnThermostatCoolSetpointChanged(coolSetpointChangedArgs);
+                                Console.WriteLine($"Exception while processing data from Nest: {ex}");
+                                Trace.TraceError($"Exception while processing data from Nest: {ex}");
                             }
                         });
 

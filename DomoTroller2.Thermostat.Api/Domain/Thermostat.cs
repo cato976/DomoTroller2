@@ -21,6 +21,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
             Register<AmbientTemperatureChanged>(OnAmbientTemperatureChanged);
             Register<HumidityChanged>(OnHumidityChanged);
             Register<SystemStatusChanged>(OnStateChanged);
+            Register<SystemModeChanged>(OnSystemModeChange);
         }
 
         public Thermostat(Guid thermostatGuid)
@@ -59,6 +60,7 @@ namespace DomoTroller2.Thermostat.Api.Domain
         public double AmbientTemperature { get; private set; }
         public double? Humidity { get; private set; }
         public string SystemStatus { get; private set; }
+        public string SystemMode { get; private set; }
 
         private new readonly IEventMetadata EventMetadata;
         private readonly IEventStore EventStore;
@@ -368,6 +370,12 @@ namespace DomoTroller2.Thermostat.Api.Domain
         {
             AggregateGuid = stateChanged.AggregateGuid;
             SystemStatus = stateChanged.NewSystemStatus;
+        }
+
+        private void OnSystemModeChange(SystemModeChanged modeChange)
+        {
+            AggregateGuid = modeChange.AggregateGuid;
+            SystemMode = modeChange.NewSystemMode;
         }
 
         private void OnConnected(Connected connected)
