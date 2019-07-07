@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -60,7 +61,6 @@ namespace DomoTroller2.Thermostat.Api
             ConnectToThermostatCommand cmd = new ConnectToThermostatCommand(tenantId, e.ThermostatId, e.ThermostatGuid, 
                 e.Temperature, e.HeatSetpoint, e.CoolSetpoint, e.Mode, e.SystemStatus);
             var eventMetadata = new EventMetadata(tenantId, "Thermostat", Guid.NewGuid().ToString(), Guid.NewGuid(), tenantId, DateTimeOffset.UtcNow);
-            //var controller = new Domain.Thermostat(eventMetadata, EventStore);
             var thermostat = Domain.Thermostat.ConnectToThermostat(eventMetadata,
                 EventStore, cmd);
         }
@@ -121,6 +121,12 @@ namespace DomoTroller2.Thermostat.Api
         private static void DomoShare_ThermostatSystemModeChanged(object sender, ThermostatSystemModeChangedEventArgs e)
         {
             var tenantId = Guid.Parse(Configuration.GetSection("AppSettings").GetSection("ControllerId").Value);
+            if (EventStore == null)
+            {
+                Trace.TraceInformation($"{DateTime.Now}: EventStore is null. Creating a new one");
+                Console.WriteLine($"{DateTime.Now}: EventStore is null. Creating a new one");
+                EventStore = EventStoreFactory.CreateEventStore();
+            }
             SystemModeChangeCommand cmd = new SystemModeChangeCommand(e.TenantId, e.ThermostatId, 
                 e.ThermostatGuid, e.NewSystemMode);
             ChangeSystemMode changeSystemModeCommand = new ChangeSystemMode(EventStore, e.ThermostatId, e.ThermostatGuid,
